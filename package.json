@@ -1,0 +1,15 @@
+{
+    "name": "swinton",
+    "private": true,
+    "workspaces": [
+        "packages/experimental"
+    ],
+    "scripts": {
+        "format": "prettier --write \"**/{*.ts,*.js,*.json}\"",
+        "tests": "npm run test --workspace=@swinton/experimental"
+    },
+    "devDependencies": {
+        "prettier": "^3.3.3",
+        "typescript": "^5.6.2"
+    }
+}

@@ -1,0 +1,1 @@
+export { initSystem } from './system'
