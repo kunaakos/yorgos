@@ -1,6 +1,6 @@
 export type Nullable<T> = T | null
 
-export type Id = string
+type Id = string
 
 export type ActorId = Id
 export type MessageId = Id
@@ -13,7 +13,7 @@ export type Serializable = {
 
 export type MessageType = Uppercase<string>
 
-type MessageBase = {
+export type MessageBase = {
     cat: string
     type: MessageType
 }

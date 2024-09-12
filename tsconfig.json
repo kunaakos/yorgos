@@ -2,13 +2,14 @@
     "compilerOptions": {
         "strict": true,
         "module": "esnext",
-        "target": "ES6",
+        "target": "ES2022",
         "moduleResolution": "node",
         "esModuleInterop": true,
         "sourceMap": true,
-        "allowUnreachableCode": false,
-        "checkJs": true,
         "declaration": true,
+        "declarationMap": true,
+        "composite": true,
+        "allowUnreachableCode": false,
         "exactOptionalPropertyTypes": true,
         "forceConsistentCasingInFileNames": true,
         "incremental": true,
@@ -16,8 +17,7 @@
         "noPropertyAccessFromIndexSignature": true,
         "noUncheckedIndexedAccess": true,
         "noUnusedLocals": true,
-        "noUnusedParameters": true,
-        // "composite": true,
+        "noUnusedParameters": true
     },
     "$schema": "https://json.schemastore.org/tsconfig",
     "_version": "2.0.0"

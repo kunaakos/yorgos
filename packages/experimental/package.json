@@ -2,9 +2,10 @@
     "name": "@swinton/experimental",
     "version": "0.0.0",
     "description": "TS actor system",
-    "main": "index.js",
+    "main": "dist/index.js",
     "scripts": {
-        "test": "jest"
+        "test": "jest",
+        "build": "tsc"
     },
     "author": "Ákos Kún (https://github.com/kunaakos)",
     "license": "ISC",

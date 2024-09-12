@@ -1,7 +1,7 @@
 import { initStateHandler } from './stateHandler'
 import { initSupervisor } from './supervisor'
 import { initMailbox } from './mailbox'
-import { Id, Message, MessageList, Nullable } from './types'
+import { ActorId, Message, MessageList, Nullable } from './types'
 import { DispatchFn } from './messageHub'
 
 export type ActorFnArgs<StateType, MessageType extends Message> = {
@@ -15,12 +15,12 @@ export type ActorFn<StateType, MessageType extends Message> = (
 ) => Nullable<StateType> | Promise<Nullable<StateType>>
 
 export type Actor = {
-    id: Id
+    id: ActorId
     deliver: DispatchFn
 }
 
 export type SpawnActorArgs<StateType> = {
-    id: Id
+    id: ActorId
     fn: ActorFn<StateType, any>
     dispatch: DispatchFn
     initialState: StateType

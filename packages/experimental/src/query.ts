@@ -1,10 +1,10 @@
 import { spawnActor } from './actor'
-import { Id, Message, MessageId } from './types'
+import { ActorId, Message, MessageId } from './types'
 import { generateRandomId } from './util'
 import { DispatchFn, MessageHub } from './messageHub'
 
 type QueryFnArgs = {
-    id: Id
+    id: ActorId
     type: Message['type']
     payload: Message['payload']
 }
