@@ -6,10 +6,10 @@ import { DispatchFn, MessageHub } from './messageHub'
 type QueryFnArgs = {
     id: Id
     type: Message['type']
-    content: Message['content']
+    payload: Message['payload']
 }
 
-export type QueryFn = (args: QueryFnArgs) => Promise<Message['content']>
+export type QueryFn = (args: QueryFnArgs) => Promise<Message['payload']>
 
 type InitQueryArgs = {
     dispatch: DispatchFn
@@ -19,17 +19,17 @@ type InitQueryArgs = {
 
 export const initQuery =
     ({ dispatch, connectActor, disconnectActor }: InitQueryArgs): QueryFn =>
-    ({ id: to, type, content }) => {
+    ({ id: to, type, payload }) => {
         // TODO: figure out proper error handling for this and make sure it's garbage collected
-        const promise: Promise<Message['content']> = new Promise(
+        const promise: Promise<Message['payload']> = new Promise(
             (resolve, reject) => {
                 const queryId: MessageId = generateRandomId()
                 const queryActor = spawnActor({
                     id: generateRandomId(),
                     dispatch: () => {},
                     fn: ({ msg }) => {
-                        if (msg.cat === 'R' && msg.irt === queryId) {
-                            resolve(msg.content)
+                        if (msg.cat === 'R' && msg.meta.irt === queryId) {
+                            resolve(msg.payload)
                         } else {
                             reject()
                         }
@@ -41,12 +41,14 @@ export const initQuery =
                 connectActor(queryActor)
                 dispatch([
                     {
-                        id: queryId,
-                        cat: 'Q',
-                        to,
-                        rsvp: queryActor.id,
                         type,
-                        content,
+                        cat: 'Q',
+                        ...(payload ? { payload } : {}),
+                        meta: {
+                            id: queryId,
+                            to,
+                            rsvp: queryActor.id,
+                        },
                     },
                 ])
             },

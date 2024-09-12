@@ -13,34 +13,45 @@ export type Serializable = {
 
 export type MessageType = Uppercase<string>
 
-type MessageBase<ContentType extends Serializable> = {
-    id: MessageId
-    type: string
-    to: ActorId
-    content: ContentType
-}
-
 export type NoResponseExpectedMessage<
-    ContentType extends Serializable = Serializable,
-> = MessageBase<ContentType> & {
+    PayloadType extends Serializable = Serializable,
+> = {
+    type: MessageType
     cat: 'NRE'
+    payload?: PayloadType
+    meta: {
+        id: MessageId
+        to: ActorId
+    }
 }
 
-export type QueryMessage<ContentType extends Serializable = Serializable> =
-    MessageBase<ContentType> & {
-        cat: 'Q'
+export type QueryMessage<PayloadType extends Serializable = Serializable> = {
+    type: MessageType
+    cat: 'Q'
+    payload?: PayloadType
+    meta: {
+        id: MessageId
+        to: ActorId
         rsvp: ActorId
     }
+}
 
-export type ResponseMessage<ContentType extends Serializable = Serializable> =
-    MessageBase<ContentType> & {
-        cat: 'R'
+export type ResponseMessage<PayloadType extends Serializable = Serializable> = {
+    type: MessageType
+    cat: 'R'
+    error?: true
+    payload?: PayloadType
+    meta: {
+        id: MessageId
+        to: ActorId
         irt: MessageId
     }
+}
 
-export type Message<ContentType extends Serializable = Serializable> =
-    | NoResponseExpectedMessage<ContentType>
-    | QueryMessage<ContentType>
-    | ResponseMessage<ContentType>
+// tagged union type with `type` and `cat` as discriminants
+export type Message<PayloadType extends Serializable = Serializable> =
+    | NoResponseExpectedMessage<PayloadType>
+    | QueryMessage<PayloadType>
+    | ResponseMessage<PayloadType>
 
 export type MessageList = Message[]

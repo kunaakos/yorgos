@@ -22,23 +22,28 @@ test('actor system quicktest', async () => {
     const TEST_ACTOR_ID = 'TEST_ACTOR'
 
     const asyncActorFn: ActorFn<null> = async ({ msg, dispatch }) => {
-        if (msg.type === 'TEST_MUTATION') {
+        if (msg.type === 'TEST_MUTATION' && msg.payload && msg.cat === 'NRE') {
             eventLog.push(4)
             expectedMessageLog.push(cloneDeep(msg))
             // should not mutate values outside actor function context
-            msg.content['string'] = 'mutated'
+            msg.payload['string'] = 'mutated'
             // processing should be
             await delay(100)
             eventLog.push(5)
             return null
-        } else if (msg.type === 'TEST_QUERY' && msg.cat === 'Q') {
+        } else if (
+            msg.type === 'TEST_QUERY' &&
+            msg.payload &&
+            msg.cat === 'Q'
+        ) {
+            msg
             eventLog.push(6)
             expectedMessageLog.push(msg)
             dispatch([
                 responseTo({
                     msg,
                     type: 'TEST_RESPONSE',
-                    content: { string: 'test response' },
+                    payload: { string: 'test response' },
                 }),
             ])
             return null
@@ -56,47 +61,51 @@ test('actor system quicktest', async () => {
 
     eventLog.push(1)
     // test NRE message and make sure actors cannot mutate source message references
-    const dispatchedContent = { string: 'not mutated' }
+    const dispatchedpayload = { string: 'not mutated' }
     system.dispatch([
         message({
             to: actor.id,
             type: 'TEST_MUTATION',
-            content: dispatchedContent,
+            payload: dispatchedpayload,
         }),
     ])
     eventLog.push(2)
 
-    // test query functionality and response message content
+    // test query functionality and response message payload
     const responsePromise = system.query({
         id: TEST_ACTOR_ID,
         type: 'TEST_QUERY',
-        content: { string: 'test query' },
+        payload: { string: 'test query' },
     })
     eventLog.push(3)
 
-    const responseContent = await responsePromise
+    const responsepayload = await responsePromise
     eventLog.push(7)
-    expect(responseContent).toStrictEqual({ string: 'test response' })
+    expect(responsepayload).toStrictEqual({ string: 'test response' })
 
     // messages received by the actor should be logged and their original order kept
     expect(expectedMessageLog).toHaveLength(2)
     expect(expectedMessageLog[0]).toStrictEqual({
-        id: 'MOCK_ID',
         type: 'TEST_MUTATION',
         cat: 'NRE',
-        to: 'TEST_ACTOR',
-        content: { string: 'not mutated' },
+        payload: { string: 'not mutated' },
+        meta: {
+            id: 'MOCK_ID',
+            to: 'TEST_ACTOR',
+        },
     })
     expect(expectedMessageLog[1]).toStrictEqual({
-        id: 'MOCK_ID',
         type: 'TEST_QUERY',
-        cat: 'Q',   
-        to: 'TEST_ACTOR',
-        rsvp: 'MOCK_ID',
-        content: { string: 'test query' },
+        cat: 'Q',
+        payload: { string: 'test query' },
+        meta: {
+            id: 'MOCK_ID',
+            to: 'TEST_ACTOR',
+            rsvp: 'MOCK_ID',
+        },
     })
 
-    expect(dispatchedContent).toStrictEqual({ string: 'not mutated' })
+    expect(dispatchedpayload).toStrictEqual({ string: 'not mutated' })
     expect(unexpectedMessageLog.length).toBe(0)
     // see the order of `eventLog.push`es
     expect(eventLog).toStrictEqual([1, 2, 3, 4, 5, 6, 7])

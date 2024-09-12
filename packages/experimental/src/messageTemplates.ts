@@ -11,34 +11,41 @@ import { generateRandomId } from './util'
 type MessageTemplateArgs<ContentType> = {
     to: ActorId
     type: MessageType
-    content: ContentType
+    payload?: ContentType
 }
 export const message = <ContentType extends Serializable = Serializable>({
     to,
     type,
-    content,
+    payload,
 }: MessageTemplateArgs<ContentType>): NoResponseExpectedMessage<ContentType> => ({
-    id: generateRandomId(),
-    cat: 'NRE',
-    to,
     type,
-    content,
+    cat: 'NRE',
+    ...(payload ? { payload } : {}),
+    meta: {
+        id: generateRandomId(),
+        to,
+    },
 })
 
 type ResponseToTemplateArgs<ContentType> = {
-    msg: QueryMessage<any>
+    msg: QueryMessage
     type: MessageType
-    content: ContentType
+    payload?: ContentType
+    error?: true
 }
 export const responseTo = <ContentType extends Serializable = Serializable>({
     msg,
     type,
-    content,
+    payload,
+    error,
 }: ResponseToTemplateArgs<ContentType>): ResponseMessage<ContentType> => ({
-    id: generateRandomId(),
-    cat: 'R',
-    to: msg.rsvp,
-    irt: msg.id,
     type,
-    content,
+    cat: 'R',
+    ...(payload ? { payload } : {}),
+    ...(error ? { error } : {}),
+    meta: {
+        id: generateRandomId(),
+        to: msg.meta.rsvp,
+        irt: msg.meta.id,
+    },
 })

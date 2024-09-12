@@ -26,7 +26,7 @@ export const initMessageHub = (): MessageHub => {
 
     const dispatch: DispatchFn = (messageList) => {
         messageList.forEach((message) => {
-            locals[message.to]?.deliver([message])
+            locals[message.meta.to]?.deliver([message])
         })
     }
 
