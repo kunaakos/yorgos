@@ -5,7 +5,7 @@ import {
     SimpleMessageMeta,
     QueryMessageMeta,
     ResponseMessageMeta,
-    WithType,
+    WithMessageType,
     WithPayload,
     WithMeta,
 } from './types'
@@ -20,18 +20,16 @@ jest.mock('./util/uniqueId', () => ({
 const delay = (millis: number) =>
     new Promise((resolve) => setTimeout(resolve, millis))
 
-type TestMutationMessage = WithType<'TEST_MUTATION'> &
-    WithPayload &
+type TestMutationMessage = WithMessageType<'TEST_MUTATION'> &
+    WithPayload<{ string: string }> &
     WithMeta<SimpleMessageMeta>
-type TestQueryMessage = WithType<'TEST_QUERY'> &
-    WithPayload &
+type TestQueryMessage = WithMessageType<'TEST_QUERY'> &
+    WithPayload<{ string: 'test query' }> &
     WithMeta<QueryMessageMeta>
-type TestResponseMessage = WithType<'TEST_RESPONSE'> &
-    WithPayload &
+type TestResponseMessage = WithMessageType<'TEST_RESPONSE'> &
+    WithPayload<{ string: 'test response' }> &
     WithMeta<ResponseMessageMeta>
 
-// NOTE: one clump of an integration test
-// written as one to save some time on code I already tested, used and know
 test('actor system quicktest', async () => {
     const expectedMessageLog: string[] = []
     const unexpectedMessageLog: string[] = []
@@ -88,11 +86,13 @@ test('actor system quicktest', async () => {
     eventLog.push(2)
 
     // test query functionality and response message payload
-    const responsePromise = system.query({
-        id: TEST_ACTOR_ID,
-        type: 'TEST_QUERY',
-        payload: { string: 'test query' },
-    })
+    const responsePromise = system.query<TestQueryMessage, TestResponseMessage>(
+        {
+            id: TEST_ACTOR_ID,
+            type: 'TEST_QUERY',
+            payload: { string: 'test query' },
+        },
+    )
     eventLog.push(3)
 
     const { type: responseType, payload: responsepayload } =

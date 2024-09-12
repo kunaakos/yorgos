@@ -1,7 +1,7 @@
 export { initSystem } from './system'
-export type { ActorSystem } from './system'
 
 export type { ActorFn } from './actor'
+export type { QueryFnArgs } from './query'
 
 export type {
     ActorId,
@@ -9,6 +9,13 @@ export type {
     Serializable,
     Message,
     MessageList,
+    MessageType,
+    WithMessageType,
+    WithPayload,
+    WithMeta,
+    SimpleMessageMeta,
+    QueryMessageMeta,
+    ResponseMessageMeta,
 } from './types'
 
 export { messageMeta, queryMeta, responseMeta } from './util/metaTemplates'

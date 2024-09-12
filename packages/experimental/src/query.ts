@@ -4,19 +4,27 @@ import { uniqueId } from './util/uniqueId'
 import { DispatchFn, MessageHub } from './messageHub'
 import { queryMeta } from './util/metaTemplates'
 
+type TypeAndpayloadOf<MessageType extends Message = Message> = Pick<
+    MessageType,
+    'type' | 'payload'
+>
+
 type QueryOptions = {
     timeout: number
 }
 
-type QueryFnArgs = {
-    id: ActorId
-    type: Message['type']
-    payload: Message['payload']
-    options?: QueryOptions
-}
-type QueryFnReturnType = Pick<Message, 'type' | 'payload'>
+export type QueryFnArgs<QueryMessageType extends Message = Message> =
+    TypeAndpayloadOf<QueryMessageType> & {
+        id: ActorId
+        options?: QueryOptions
+    }
 
-export type QueryFn = (args: QueryFnArgs) => Promise<QueryFnReturnType>
+export type QueryFn = <
+    QueryMessageType extends Message = Message,
+    ResponseMessageType extends Message = Message,
+>(
+    args: QueryFnArgs<QueryMessageType>,
+) => Promise<TypeAndpayloadOf<ResponseMessageType>>
 
 type InitQueryArgs = {
     dispatch: DispatchFn
@@ -30,71 +38,65 @@ const DEFAULT_QUERY_OPTIONS: QueryOptions = {
 
 export const initQuery =
     ({ dispatch, connectActor, disconnectActor }: InitQueryArgs): QueryFn =>
-    /**
-     * A single-use actor with a unique ID is spawned for every query.
-     **/
     ({ id: to, type, payload, options = DEFAULT_QUERY_OPTIONS }) => {
-        const queryId: MessageId = uniqueId()
-        const queryActorId: ActorId = uniqueId()
-
         /**
-         * This promise either resolves with a received message payload and type, or rejects with an error.
+         * A single-use actor with a unique ID is spawned for dispatching every query message.
+         * The creation and destruction of this actor is enclosed in this promise executor.
+         * This promise either resolves with a received message's payload and type, or rejects with an (internal) error.
          **/
-        const queryPromise: Promise<QueryFnReturnType> = new Promise(
-            (resolve, reject) => {
-                /**
-                 * The actor function handles invalid responses, but does not time out by itself.
-                 */
-                const queryActorFn: ActorFn<null> = ({ msg: responseMsg }) => {
-                    if (
-                        responseMsg.meta.cat === 'R' &&
-                        responseMsg.meta.irt === queryId
-                    ) {
-                        resolve({
-                            type: responseMsg.type,
-                            ...(responseMsg.payload
-                                ? { payload: responseMsg.payload }
-                                : {}),
-                        })
-                    } else {
-                        reject(new Error('Invalid query response received.'))
-                    }
-                    disconnectActor({ id: queryActorId })
-                    return null
+        return new Promise((resolve, reject) => {
+            const queryId: MessageId = uniqueId()
+            const queryActorId: ActorId = uniqueId()
+            /**
+             * The actor function handles unexpected responses, but does not time out by itself.
+             */
+            const queryActorFn: ActorFn<null> = ({ msg: responseMsg }) => {
+                if (
+                    responseMsg.meta.cat === 'R' &&
+                    responseMsg.meta.irt === queryId
+                ) {
+                    resolve({
+                        type: responseMsg.type,
+                        ...(responseMsg.payload
+                            ? { payload: responseMsg.payload }
+                            : {}),
+                    })
+                } else {
+                    reject(new Error('Unexpected query response received.'))
                 }
+                disconnectActor({ id: queryActorId })
+                return null
+            }
 
-                const queryActor = spawnActor({
-                    id: queryActorId,
-                    dispatch: () => {},
-                    fn: queryActorFn,
-                    initialState: null,
-                })
-                connectActor(queryActor)
+            const queryActor = spawnActor({
+                id: queryActorId,
+                dispatch: () => {},
+                fn: queryActorFn,
+                initialState: null,
+            })
+            connectActor(queryActor)
 
-                dispatch([
-                    {
-                        type,
-                        ...(payload ? { payload } : {}),
-                        meta: queryMeta({
-                            id: queryId,
-                            to,
-                            rsvp: queryActorId,
-                        }),
-                    },
-                ])
+            dispatch([
+                {
+                    type,
+                    ...(payload ? { payload } : {}),
+                    meta: queryMeta({
+                        id: queryId,
+                        to,
+                        rsvp: queryActorId,
+                    }),
+                },
+            ])
 
-                /**
-                 * To handle timeouts, one must simply dispose of the query actor and reject the pending `queryPromise`.
-                 * Any subsequent responses will be discarded (as of the current implementation),
-                 * but this will not halt any ongoing process in the queried actor.
-                 * TODO: add timeout value to `QueryMessageMeta`, so queried actors can limit themselves.
-                 */
-                setTimeout(() => {
-                    disconnectActor({ id: queryActorId })
-                    reject(new Error('Query timed out.'))
-                }, options.timeout)
-            },
-        )
-
-        return queryPromise
+            /**
+             * To handle timeouts, one must simply dispose of the query actor and reject the pending `queryPromise`.
+             * Any subsequent responses will be discarded (as of the current implementation),
+             * but this will not halt any ongoing process in the queried actor.
+             * TODO: add timeout value to `QueryMessageMeta`, so queried actors can limit themselves.
+             */
+            setTimeout(() => {
+                disconnectActor({ id: queryActorId })
+                reject(new Error('Query timed out.'))
+            }, options.timeout)
+        })
     }

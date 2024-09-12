@@ -13,8 +13,14 @@ export type Serializable = {
 
 export type MessageType = Uppercase<string>
 
-export type WithType<CustomMessageType extends MessageType = MessageType> = {
+export type WithMessageType<
+    CustomMessageType extends MessageType = MessageType,
+> = {
     type: CustomMessageType
+}
+
+export type WithPayload<PayloadType extends Serializable = Serializable> = {
+    payload: PayloadType
 }
 
 export type SimpleMessageMeta = {
@@ -46,16 +52,6 @@ export type WithMeta<MetaType extends MessageMeta = MessageMeta> = {
     meta: MetaType
 }
 
-export type WithPayload<PayloadType extends Serializable = Serializable> = {
-    payload: PayloadType
-}
-
-export type Message = WithType & WithMeta & Partial<WithPayload>
-
-// tagged union type with `type` and `cat` as discriminants
-// export type Message<PayloadType extends Serializable = Serializable> =
-//     | SimpleMessage<PayloadType>
-//     | QueryMessage<PayloadType>
-//     | ResponseMessage<PayloadType>
+export type Message = WithMessageType & WithMeta & Partial<WithPayload>
 
 export type MessageList = Message[]
