@@ -1,13 +1,13 @@
 {
-    "name": "swinton",
+    "name": "yorgos",
     "private": true,
     "workspaces": [
         "packages/experimental"
     ],
     "scripts": {
         "format": "prettier --write \"**/{*.ts,*.js,*.json}\"",
-        "tests": "npm run test --workspace=@swinton/experimental",
-        "builds": "npm run build --workspace=@swinton/experimental"
+        "tests": "npm run test --workspace=@yorgos/experimental",
+        "builds": "npm run build --workspace=@yorgos/experimental"
     },
     "devDependencies": {
         "prettier": "^3.3.3",

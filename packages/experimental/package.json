@@ -1,5 +1,5 @@
 {
-    "name": "@swinton/experimental",
+    "name": "@yorgos/experimental",
     "version": "0.0.0",
     "description": "TS actor system",
     "main": "dist/index.js",
