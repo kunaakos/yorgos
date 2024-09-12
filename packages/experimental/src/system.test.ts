@@ -1,10 +1,14 @@
-import { cloneDeep } from 'lodash'
 import { initSystem } from './system'
 import { message, responseTo } from './messageTemplates'
 import { ActorFn } from './actor'
 import { NoResponseExpectedMessageMeta, QueryMessageMeta } from './types'
 
-jest.mock('./util')
+jest.mock('./util/uniqueId', () => ({
+    uniqueId: (() => {
+        let index = 1
+        return () => `MOCK_ID_${index++}`
+    })(),
+}))
 
 const delay = (millis: number) =>
     new Promise((resolve) => setTimeout(resolve, millis))
@@ -26,12 +30,8 @@ type TestQueryMessage = {
 // NOTE: one clump of an integration test
 // written as one to save some time on code I already tested, used and know
 test('actor system quicktest', async () => {
-    const { generateRandomId } = await import('./util')
-    //@ts-ignore
-    generateRandomId.mockReturnValue('MOCK_ID')
-
-    const expectedMessageLog: unknown[] = []
-    const unexpectedMessageLog: unknown[] = []
+    const expectedMessageLog: string[] = []
+    const unexpectedMessageLog: string[] = []
     const eventLog: number[] = []
     const system = initSystem()
     const TEST_ACTOR_ID = 'TEST_ACTOR'
@@ -42,7 +42,7 @@ test('actor system quicktest', async () => {
     > = async ({ msg, dispatch }) => {
         if (msg.type === 'TEST_MUTATION' && msg.payload && msg.cat === 'NRE') {
             eventLog.push(4)
-            expectedMessageLog.push(cloneDeep(msg))
+            expectedMessageLog.push(JSON.stringify(msg))
             // should not mutate values outside actor function context
             msg.payload['string'] = 'mutated'
             // processing should be
@@ -54,9 +54,8 @@ test('actor system quicktest', async () => {
             msg.payload &&
             msg.cat === 'Q'
         ) {
-            msg
             eventLog.push(6)
-            expectedMessageLog.push(msg)
+            expectedMessageLog.push(JSON.stringify(msg))
             dispatch([
                 responseTo({
                     msg,
@@ -66,7 +65,7 @@ test('actor system quicktest', async () => {
             ])
             return null
         } else {
-            unexpectedMessageLog.push(msg)
+            unexpectedMessageLog.push(JSON.stringify(msg))
             return null
         }
     }
@@ -103,23 +102,23 @@ test('actor system quicktest', async () => {
 
     // messages received by the actor should be logged and their original order kept
     expect(expectedMessageLog).toHaveLength(2)
-    expect(expectedMessageLog[0]).toStrictEqual({
+    expect(JSON.parse(expectedMessageLog[0] as string)).toStrictEqual({
         type: 'TEST_MUTATION',
         cat: 'NRE',
         payload: { string: 'not mutated' },
         meta: {
-            id: 'MOCK_ID',
+            id: 'MOCK_ID_1',
             to: 'TEST_ACTOR',
         },
     })
-    expect(expectedMessageLog[1]).toStrictEqual({
+    expect(JSON.parse(expectedMessageLog[1] as string)).toStrictEqual({
         type: 'TEST_QUERY',
         cat: 'Q',
         payload: { string: 'test query' },
         meta: {
-            id: 'MOCK_ID',
+            id: 'MOCK_ID_2',
             to: 'TEST_ACTOR',
-            rsvp: 'MOCK_ID',
+            rsvp: 'MOCK_ID_3',
         },
     })
 

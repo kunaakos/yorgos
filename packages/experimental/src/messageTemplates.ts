@@ -6,7 +6,7 @@ import {
     ResponseMessage,
     Serializable,
 } from './types'
-import { generateRandomId } from './util'
+import { uniqueId } from './util/uniqueId'
 
 type MessageTemplateArgs<ContentType> = {
     to: ActorId
@@ -22,7 +22,7 @@ export const message = <ContentType extends Serializable = Serializable>({
     cat: 'NRE',
     ...(payload ? { payload } : {}),
     meta: {
-        id: generateRandomId(),
+        id: uniqueId(),
         to,
     },
 })
@@ -44,7 +44,7 @@ export const responseTo = <ContentType extends Serializable = Serializable>({
     ...(payload ? { payload } : {}),
     ...(error ? { error } : {}),
     meta: {
-        id: generateRandomId(),
+        id: uniqueId(),
         to: msg.meta.rsvp,
         irt: msg.meta.id,
     },

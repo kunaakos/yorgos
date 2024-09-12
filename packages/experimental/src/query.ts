@@ -1,6 +1,6 @@
 import { spawnActor } from './actor'
 import { ActorId, Message, MessageId } from './types'
-import { generateRandomId } from './util'
+import { uniqueId } from './util/uniqueId'
 import { DispatchFn, MessageHub } from './messageHub'
 
 type QueryFnArgs = {
@@ -23,9 +23,9 @@ export const initQuery =
         // TODO: figure out proper error handling for this and make sure it's garbage collected
         const promise: Promise<Message['payload']> = new Promise(
             (resolve, reject) => {
-                const queryId: MessageId = generateRandomId()
+                const queryId: MessageId = uniqueId()
                 const queryActor = spawnActor({
-                    id: generateRandomId(),
+                    id: uniqueId(),
                     dispatch: () => {},
                     fn: ({ msg }) => {
                         if (msg.cat === 'R' && msg.meta.irt === queryId) {
