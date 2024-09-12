@@ -10,7 +10,7 @@ export type ActorFnArgs<StateType, MessageType extends Message> = {
     dispatch: DispatchFn
 }
 
-export type ActorFn<StateType, MessageType extends Message> = (
+export type ActorFn<StateType, MessageType extends Message = Message> = (
     args: ActorFnArgs<StateType, MessageType>,
 ) => Nullable<StateType> | Promise<Nullable<StateType>>
 

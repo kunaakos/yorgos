@@ -1,12 +1,12 @@
 import {
     ActorId,
     MessageType,
-    NoResponseExpectedMessage,
+    SimpleMessage,
     QueryMessage,
     ResponseMessage,
     Serializable,
-} from './types'
-import { uniqueId } from './util/uniqueId'
+} from '../types'
+import { uniqueId } from './uniqueId'
 
 type MessageTemplateArgs<ContentType> = {
     to: ActorId
@@ -17,7 +17,7 @@ export const message = <ContentType extends Serializable = Serializable>({
     to,
     type,
     payload,
-}: MessageTemplateArgs<ContentType>): NoResponseExpectedMessage<ContentType> => ({
+}: MessageTemplateArgs<ContentType>): SimpleMessage<ContentType> => ({
     type,
     cat: 'NRE',
     ...(payload ? { payload } : {}),

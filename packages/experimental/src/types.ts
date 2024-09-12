@@ -18,18 +18,17 @@ export type MessageBase = {
     type: MessageType
 }
 
-export type NoResponseExpectedMessageMeta = {
+export type SimpleMessageMeta = {
     id: MessageId
     to: ActorId
 }
 
-export type NoResponseExpectedMessage<
-    PayloadType extends Serializable = Serializable,
-> = MessageBase & {
-    cat: 'NRE'
-    payload?: PayloadType
-    meta: NoResponseExpectedMessageMeta
-}
+export type SimpleMessage<PayloadType extends Serializable = Serializable> =
+    MessageBase & {
+        cat: 'NRE'
+        payload?: PayloadType
+        meta: SimpleMessageMeta
+    }
 
 export type QueryMessageMeta = {
     id: MessageId
@@ -53,14 +52,13 @@ export type ResponseMessageMeta = {
 export type ResponseMessage<PayloadType extends Serializable = Serializable> =
     MessageBase & {
         cat: 'R'
-        error?: true
         payload?: PayloadType
         meta: ResponseMessageMeta
     }
 
 // tagged union type with `type` and `cat` as discriminants
 export type Message<PayloadType extends Serializable = Serializable> =
-    | NoResponseExpectedMessage<PayloadType>
+    | SimpleMessage<PayloadType>
     | QueryMessage<PayloadType>
     | ResponseMessage<PayloadType>
 

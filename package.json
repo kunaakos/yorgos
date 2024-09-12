@@ -6,7 +6,8 @@
     ],
     "scripts": {
         "format": "prettier --write \"**/{*.ts,*.js,*.json}\"",
-        "tests": "npm run test --workspace=@swinton/experimental"
+        "tests": "npm run test --workspace=@swinton/experimental",
+        "builds": "npm run build --workspace=@swinton/experimental"
     },
     "devDependencies": {
         "prettier": "^3.3.3",

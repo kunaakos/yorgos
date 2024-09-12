@@ -1,4 +1,16 @@
 export { initSystem } from './system'
-export * from './messageTemplates'
 export type { ActorFn } from './actor'
-export type * from './types'
+
+export type {
+    ActorId,
+    MessageId,
+    Serializable,
+    Message,
+    MessageList,
+    SimpleMessage,
+    QueryMessage,
+    ResponseMessage,
+} from './types'
+
+export { message, responseTo } from './util/messageTemplates'
+export { uniqueId } from './util/uniqueId'

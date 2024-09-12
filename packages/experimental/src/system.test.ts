@@ -1,7 +1,7 @@
 import { initSystem } from './system'
-import { message, responseTo } from './messageTemplates'
+import { message, responseTo } from './util/messageTemplates'
 import { ActorFn } from './actor'
-import { NoResponseExpectedMessageMeta, QueryMessageMeta } from './types'
+import { SimpleMessageMeta, QueryMessageMeta } from './types'
 
 jest.mock('./util/uniqueId', () => ({
     uniqueId: (() => {
@@ -17,7 +17,7 @@ type TestMutationMessage = {
     type: 'TEST_MUTATION'
     cat: 'NRE'
     payload: Record<string, string>
-    meta: NoResponseExpectedMessageMeta
+    meta: SimpleMessageMeta
 }
 
 type TestQueryMessage = {
@@ -96,8 +96,10 @@ test('actor system quicktest', async () => {
     })
     eventLog.push(3)
 
-    const responsepayload = await responsePromise
+    const { type: responseType, payload: responsepayload } =
+        await responsePromise
     eventLog.push(7)
+    expect(responseType).toBe('TEST_RESPONSE')
     expect(responsepayload).toStrictEqual({ string: 'test response' })
 
     // messages received by the actor should be logged and their original order kept
