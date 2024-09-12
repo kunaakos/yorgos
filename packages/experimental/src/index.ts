@@ -1,4 +1,6 @@
 export { initSystem } from './system'
+export type { ActorSystem } from './system'
+
 export type { ActorFn } from './actor'
 
 export type {
@@ -7,10 +9,7 @@ export type {
     Serializable,
     Message,
     MessageList,
-    SimpleMessage,
-    QueryMessage,
-    ResponseMessage,
 } from './types'
 
-export { message, responseTo } from './util/messageTemplates'
+export { messageMeta, queryMeta, responseMeta } from './util/metaTemplates'
 export { uniqueId } from './util/uniqueId'

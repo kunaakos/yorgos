@@ -2,6 +2,7 @@ import { ActorFn, spawnActor } from './actor'
 import { ActorId, Message, MessageId } from './types'
 import { uniqueId } from './util/uniqueId'
 import { DispatchFn, MessageHub } from './messageHub'
+import { queryMeta } from './util/metaTemplates'
 
 type QueryOptions = {
     timeout: number
@@ -46,7 +47,7 @@ export const initQuery =
                  */
                 const queryActorFn: ActorFn<null> = ({ msg: responseMsg }) => {
                     if (
-                        responseMsg.cat === 'R' &&
+                        responseMsg.meta.cat === 'R' &&
                         responseMsg.meta.irt === queryId
                     ) {
                         resolve({
@@ -73,13 +74,12 @@ export const initQuery =
                 dispatch([
                     {
                         type,
-                        cat: 'Q',
                         ...(payload ? { payload } : {}),
-                        meta: {
+                        meta: queryMeta({
                             id: queryId,
                             to,
                             rsvp: queryActorId,
-                        },
+                        }),
                     },
                 ])
 

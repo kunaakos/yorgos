@@ -1,7 +1,14 @@
 import { initSystem } from './system'
-import { message, responseTo } from './util/messageTemplates'
+import { messageMeta, responseMeta } from './util/metaTemplates'
 import { ActorFn } from './actor'
-import { SimpleMessageMeta, QueryMessageMeta } from './types'
+import {
+    SimpleMessageMeta,
+    QueryMessageMeta,
+    ResponseMessageMeta,
+    WithType,
+    WithPayload,
+    WithMeta,
+} from './types'
 
 jest.mock('./util/uniqueId', () => ({
     uniqueId: (() => {
@@ -13,19 +20,15 @@ jest.mock('./util/uniqueId', () => ({
 const delay = (millis: number) =>
     new Promise((resolve) => setTimeout(resolve, millis))
 
-type TestMutationMessage = {
-    type: 'TEST_MUTATION'
-    cat: 'NRE'
-    payload: Record<string, string>
-    meta: SimpleMessageMeta
-}
-
-type TestQueryMessage = {
-    type: 'TEST_QUERY'
-    cat: 'Q'
-    payload: Record<string, string>
-    meta: QueryMessageMeta
-}
+type TestMutationMessage = WithType<'TEST_MUTATION'> &
+    WithPayload &
+    WithMeta<SimpleMessageMeta>
+type TestQueryMessage = WithType<'TEST_QUERY'> &
+    WithPayload &
+    WithMeta<QueryMessageMeta>
+type TestResponseMessage = WithType<'TEST_RESPONSE'> &
+    WithPayload &
+    WithMeta<ResponseMessageMeta>
 
 // NOTE: one clump of an integration test
 // written as one to save some time on code I already tested, used and know
@@ -40,7 +43,7 @@ test('actor system quicktest', async () => {
         null,
         TestMutationMessage | TestQueryMessage
     > = async ({ msg, dispatch }) => {
-        if (msg.type === 'TEST_MUTATION' && msg.payload && msg.cat === 'NRE') {
+        if (msg.type === 'TEST_MUTATION') {
             eventLog.push(4)
             expectedMessageLog.push(JSON.stringify(msg))
             // should not mutate values outside actor function context
@@ -49,20 +52,15 @@ test('actor system quicktest', async () => {
             await delay(100)
             eventLog.push(5)
             return null
-        } else if (
-            msg.type === 'TEST_QUERY' &&
-            msg.payload &&
-            msg.cat === 'Q'
-        ) {
+        } else if (msg.type === 'TEST_QUERY') {
             eventLog.push(6)
             expectedMessageLog.push(JSON.stringify(msg))
-            dispatch([
-                responseTo({
-                    msg,
-                    type: 'TEST_RESPONSE',
-                    payload: { string: 'test response' },
-                }),
-            ])
+            const testResponseMessage: TestResponseMessage = {
+                type: 'TEST_RESPONSE',
+                payload: { string: 'test response' },
+                meta: responseMeta(msg.meta),
+            }
+            dispatch([testResponseMessage])
             return null
         } else {
             unexpectedMessageLog.push(JSON.stringify(msg))
@@ -79,13 +77,14 @@ test('actor system quicktest', async () => {
     eventLog.push(1)
     // test NRE message and make sure actors cannot mutate source message references
     const dispatchedpayload = { string: 'not mutated' }
-    system.dispatch([
-        message({
+    const testMutationMessage: TestMutationMessage = {
+        type: 'TEST_MUTATION',
+        payload: dispatchedpayload,
+        meta: messageMeta({
             to: actor.id,
-            type: 'TEST_MUTATION',
-            payload: dispatchedpayload,
         }),
-    ])
+    }
+    system.dispatch([testMutationMessage])
     eventLog.push(2)
 
     // test query functionality and response message payload
@@ -106,19 +105,19 @@ test('actor system quicktest', async () => {
     expect(expectedMessageLog).toHaveLength(2)
     expect(JSON.parse(expectedMessageLog[0] as string)).toStrictEqual({
         type: 'TEST_MUTATION',
-        cat: 'NRE',
         payload: { string: 'not mutated' },
         meta: {
             id: 'MOCK_ID_1',
+            cat: 'NRE',
             to: 'TEST_ACTOR',
         },
     })
     expect(JSON.parse(expectedMessageLog[1] as string)).toStrictEqual({
         type: 'TEST_QUERY',
-        cat: 'Q',
         payload: { string: 'test query' },
         meta: {
             id: 'MOCK_ID_2',
+            cat: 'Q',
             to: 'TEST_ACTOR',
             rsvp: 'MOCK_ID_3',
         },
