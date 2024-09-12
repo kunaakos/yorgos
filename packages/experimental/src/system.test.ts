@@ -2,11 +2,26 @@ import { cloneDeep } from 'lodash'
 import { initSystem } from './system'
 import { message, responseTo } from './messageTemplates'
 import { ActorFn } from './actor'
+import { NoResponseExpectedMessageMeta, QueryMessageMeta } from './types'
 
 jest.mock('./util')
 
 const delay = (millis: number) =>
     new Promise((resolve) => setTimeout(resolve, millis))
+
+type TestMutationMessage = {
+    type: 'TEST_MUTATION'
+    cat: 'NRE'
+    payload: Record<string, string>
+    meta: NoResponseExpectedMessageMeta
+}
+
+type TestQueryMessage = {
+    type: 'TEST_QUERY'
+    cat: 'Q'
+    payload: Record<string, string>
+    meta: QueryMessageMeta
+}
 
 // NOTE: one clump of an integration test
 // written as one to save some time on code I already tested, used and know
@@ -21,7 +36,10 @@ test('actor system quicktest', async () => {
     const system = initSystem()
     const TEST_ACTOR_ID = 'TEST_ACTOR'
 
-    const asyncActorFn: ActorFn<null> = async ({ msg, dispatch }) => {
+    const asyncActorFn: ActorFn<
+        null,
+        TestMutationMessage | TestQueryMessage
+    > = async ({ msg, dispatch }) => {
         if (msg.type === 'TEST_MUTATION' && msg.payload && msg.cat === 'NRE') {
             eventLog.push(4)
             expectedMessageLog.push(cloneDeep(msg))

@@ -4,7 +4,7 @@ import { ActorFn } from './actor'
 import { DispatchFn } from './messageHub'
 
 export type InitSupervisorArgs = {
-    fn: ActorFn<any>
+    fn: ActorFn<any, any>
     dispatch: DispatchFn
     state: StateHandler<any>
     mailbox: Mailbox

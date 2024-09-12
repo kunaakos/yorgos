@@ -4,14 +4,14 @@ import { initMailbox } from './mailbox'
 import { Id, Message, MessageList, Nullable } from './types'
 import { DispatchFn } from './messageHub'
 
-export type ActorFnArgs<StateType> = {
+export type ActorFnArgs<StateType, MessageType extends Message> = {
     state: StateType
-    msg: Message
+    msg: MessageType
     dispatch: DispatchFn
 }
 
-export type ActorFn<StateType> = (
-    args: ActorFnArgs<StateType>,
+export type ActorFn<StateType, MessageType extends Message> = (
+    args: ActorFnArgs<StateType, MessageType>,
 ) => Nullable<StateType> | Promise<Nullable<StateType>>
 
 export type Actor = {
@@ -21,7 +21,7 @@ export type Actor = {
 
 export type SpawnActorArgs<StateType> = {
     id: Id
-    fn: ActorFn<StateType>
+    fn: ActorFn<StateType, any>
     dispatch: DispatchFn
     initialState: StateType
 }
