@@ -1,6 +1,5 @@
 import { cloneMessage } from './util/cloneMessage'
 import { Message } from './types/message'
-import { Nullable } from './types/base'
 import { MessageList } from './types/system'
 import { Mailbox } from './types/mailbox'
 
@@ -8,13 +7,17 @@ export const initMailbox = (): Mailbox => {
     const storedMessages: MessageList = []
 
     const hasMessages = () => Boolean(storedMessages.length)
+    const isEmpty = () => !Boolean(storedMessages.length)
 
     const deliver = (messages: MessageList) => {
         storedMessages.push(...messages.map(cloneMessage))
     }
 
-    const getOldest = (): Nullable<Message> =>
-        storedMessages[0] ? cloneMessage(storedMessages[0]) : null
+    const getOldest = (): Message => {
+        if (!storedMessages.length || !storedMessages[0])
+            throw new Error('No message in mailbox.')
+        return cloneMessage(storedMessages[0])
+    }
 
     const deleteOldest = () => {
         storedMessages.shift()
@@ -30,6 +33,7 @@ export const initMailbox = (): Mailbox => {
 
     return {
         hasMessages,
+        isEmpty,
         deliver,
         getOldest,
         deleteOldest,

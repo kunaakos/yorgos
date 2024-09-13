@@ -1,8 +1,9 @@
 import { ActorFn, ActorStateHandler } from './types/actor'
 import { Mailbox } from './types/mailbox'
 import { DispatchFn } from './types/system'
+import { condition } from './util/condition'
+import { eventually } from './util/eventually'
 
-// TODO: state and message types, refactor to make it less imperative
 export const initSupervisor = ({
     fn,
     dispatch,
@@ -14,43 +15,41 @@ export const initSupervisor = ({
     state: ActorStateHandler<any>
     mailbox: Mailbox
 }) => {
-    let processing: boolean = false
+    const processing = condition(false)
 
-    const handleProcessingError = (error: any) => {
-        processing = false
-        console.error(error)
-    }
-
-    // NOTE: quick and dirty solution for browser and node support
-    const fallback = (cb: () => void) => cb()
-    const eventually = setImmediate || requestIdleCallback || fallback
-
-    const processMessages = () => {
-        eventually(() => {
-            if (!processing) {
-                processing = true
-                processLoop().catch(handleProcessingError)
-            }
-        })
-    }
+    /**
+     * Processing messages should not block the flow of the function that
+     * called the `DispatchFn` triggering message processing.
+     */
+    const processMessages = eventually(
+        processing.toggleAndDoIf(false, () => {
+            processLoop()
+                .then(() => {
+                    processing.set(false)
+                })
+                .catch((error: any) => {
+                    processing.set(false)
+                    console.error(error)
+                })
+        }),
+    )
 
     const processLoop = async () => {
-        while (processing) {
-            const msg = mailbox.getOldest()
-            if (!msg) {
-                processing = false
-            } else {
-                try {
-                    const newState = await fn({
-                        state: state.get(),
-                        msg,
-                        dispatch,
-                    })
-                    newState && state.set(newState)
-                } catch {
-                    // messages that cause errors are dropped
-                    // TODO: supervision policies and error logging
-                }
+        while (processing.is(true) && mailbox.hasMessages()) {
+            try {
+                const msg = mailbox.getOldest()
+                const newState = await fn({
+                    state: state.get(),
+                    msg,
+                    dispatch,
+                })
+                newState && state.set(newState)
+            } catch {
+                /**
+                 * Messages that cause errors are dropped, there are no other
+                 * supervision policies implemented currently.
+                 */
+            } finally {
                 mailbox.deleteOldest()
             }
         }
