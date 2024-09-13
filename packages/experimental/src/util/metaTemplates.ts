@@ -1,10 +1,9 @@
+import { ActorId, MessageId } from '../types/base'
 import {
-    ActorId,
-    MessageId,
     QueryMessageMeta,
     ResponseMessageMeta,
     SimpleMessageMeta,
-} from '../types'
+} from '../types/messageMeta'
 import { uniqueId } from './uniqueId'
 
 export const messageMeta = ({ to }: { to: ActorId }): SimpleMessageMeta => ({

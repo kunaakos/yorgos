@@ -1,19 +1,19 @@
-import { ActorFn } from './types/actorFn'
-import { DispatchFn, Mailbox, StateHandler } from './types/system'
+import { ActorFn, ActorStateHandler } from './types/actor'
+import { Mailbox } from './types/mailbox'
+import { DispatchFn } from './types/system'
 
-export type InitSupervisorArgs = {
-    fn: ActorFn<any, any>
-    dispatch: DispatchFn
-    state: StateHandler<any>
-    mailbox: Mailbox
-}
-
+// TODO: state and message types, refactor to make it less imperative
 export const initSupervisor = ({
     fn,
     dispatch,
     state,
     mailbox,
-}: InitSupervisorArgs) => {
+}: {
+    fn: ActorFn<any, any>
+    dispatch: DispatchFn
+    state: ActorStateHandler<any>
+    mailbox: Mailbox
+}) => {
     let processing: boolean = false
 
     const handleProcessingError = (error: any) => {

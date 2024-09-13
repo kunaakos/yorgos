@@ -1,14 +1,12 @@
 import { initSystem } from './system'
 import { messageMeta, responseMeta } from './util/metaTemplates'
-import { ActorFn } from './types/actorFn'
+import { ActorFn } from './types/actor'
+import { WithMessageType, WithMeta, WithPayload } from './types/message'
 import {
-    SimpleMessageMeta,
     QueryMessageMeta,
     ResponseMessageMeta,
-    WithMessageType,
-    WithPayload,
-    WithMeta,
-} from './types'
+    SimpleMessageMeta,
+} from './types/messageMeta'
 
 jest.mock('./util/uniqueId', () => ({
     uniqueId: (() => {

@@ -1,6 +1,6 @@
 import { spawnActor } from './actor'
-import { ActorId, MessageId } from './types'
-import { ActorFn } from './types/actorFn'
+import { ActorFn } from './types/actor'
+import { ActorId, MessageId } from './types/base'
 import { MessageHub } from './types/messageHub'
 import { QueryFn } from './types/queryFn'
 import { DispatchFn } from './types/system'

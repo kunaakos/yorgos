@@ -1,17 +1,17 @@
-import { ActorId } from '../types'
+import { ActorId } from './base'
 import { DispatchFn } from './system'
 
 export type ConnectActorFn = (args: {
-    id: ActorId //..
-    deliver: DispatchFn //..
+    id: ActorId //
+    deliver: DispatchFn //
 }) => void
 
 export type DisconnectActorFn = (args: {
-    id: ActorId //..
+    id: ActorId //
 }) => void
 
 export type LocalConnection = {
-    deliver: DispatchFn //..
+    deliver: DispatchFn //
 }
 
 export type MessageHub = {

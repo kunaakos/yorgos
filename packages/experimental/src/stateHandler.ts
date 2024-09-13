@@ -1,15 +1,10 @@
-export type StateHandler<StateType> = {
-    get: () => StateType
-    set: (newState: StateType) => void
-}
+import { ActorStateHandler } from './types/actor'
 
-type InitStateHandlerArgs<StateType> = {
-    initialState: StateType
-}
-
-export const initStateHandler = <StateType>({
+export const initStateHandler = <StateType = any>({
     initialState,
-}: InitStateHandlerArgs<StateType>): StateHandler<StateType> => {
+}: {
+    initialState: StateType
+}): ActorStateHandler<StateType> => {
     let state: StateType = initialState
     const get = () => ({ ...state })
     const set = (newState: StateType) => {

@@ -1,25 +1,19 @@
 import { initStateHandler } from './stateHandler'
 import { initSupervisor } from './supervisor'
 import { initMailbox } from './mailbox'
-import { ActorId, MessageList } from './types'
-import { ActorFn } from './types/actorFn'
-import { Actor, DispatchFn } from './types/system'
+import { SpawnFn } from './types/actor'
+import { Actor, MessageList } from './types/system'
 
-export type SpawnActorArgs<StateType> = {
-    id: ActorId
-    fn: ActorFn<StateType, any>
-    dispatch: DispatchFn
-    initialState: StateType
-}
-
-export const spawnActor = <StateType>({
-    id,
-    fn,
-    dispatch,
-    initialState,
-}: SpawnActorArgs<StateType>): Actor => {
+/**
+ * The most important thing about `Actor`s is that they're just closures.
+ * There is no actor object, just reference(s) to the actor's function(s).
+ * Actor functionality is composed of these functions.
+ * Try not to cling to things (keep references), which will
+ * stop actors from being garbage collected when their time is due.
+ */
+export const spawnActor: SpawnFn = ({ id, fn, dispatch, initialState }) => {
     const mailbox = initMailbox()
-    const state = initStateHandler<StateType>({ initialState })
+    const state = initStateHandler({ initialState })
     const supervisor = initSupervisor({
         fn,
         dispatch,

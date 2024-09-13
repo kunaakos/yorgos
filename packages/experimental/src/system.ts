@@ -1,7 +1,7 @@
 import { spawnActor } from './actor'
 import { initMessageHub } from './messageHub'
 import { initQuery } from './query'
-import { ActorSystem, SpawnSystemActorArgs } from './types/system'
+import { ActorSystem } from './types/system'
 
 export const initSystem = (): ActorSystem => {
     const messageHub = initMessageHub()
@@ -12,11 +12,7 @@ export const initSystem = (): ActorSystem => {
         disconnectActor: messageHub.disconnectActor,
     })
 
-    const spawn = <StateType>({
-        id,
-        fn,
-        initialState,
-    }: SpawnSystemActorArgs<StateType>) => {
+    const spawn: ActorSystem['spawn'] = ({ id, fn, initialState }) => {
         const actor = spawnActor({
             id,
             fn,

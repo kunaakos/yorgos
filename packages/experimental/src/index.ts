@@ -1,22 +1,25 @@
 export { initSystem } from './system'
 
-export type { ActorFn } from './types/actorFn'
-export type { QueryFnArgs } from './types/queryFn'
+export type { ActorFn } from './types/actor'
+export type { QueryFnParams } from './types/queryFn'
 
-// export type {
-//     ActorId,
-//     MessageId,
-//     Serializable,
-//     Message,
-//     MessageList,
-//     MessageType,
-//     WithMessageType,
-//     WithPayload,
-//     WithMeta,
-//     SimpleMessageMeta,
-//     QueryMessageMeta,
-//     ResponseMessageMeta,
-// } from './types'
+export type { ActorId, MessageId, Serializable } from './types/base'
+
+export type { Actor, MessageList } from './types/system'
+
+export type {
+    Message,
+    MessageType,
+    WithMessageType,
+    WithPayload,
+    WithMeta,
+} from './types/message'
+
+export type {
+    SimpleMessageMeta,
+    QueryMessageMeta,
+    ResponseMessageMeta,
+} from './types/messageMeta'
 
 export { messageMeta, queryMeta, responseMeta } from './util/metaTemplates'
 export { uniqueId } from './util/uniqueId'

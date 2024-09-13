@@ -1,8 +1,9 @@
-import { ActorId, Message } from '../types'
+import { ActorId } from './base'
+import { Message } from './message'
 import { TypeAndpayloadOf } from './util'
 
-export type QueryFnArgs<
-    QueryMessageType extends Message = Message, //..
+export type QueryFnParams<
+    QueryMessageType extends Message = Message, //
 > = TypeAndpayloadOf<QueryMessageType> & {
     id: ActorId
     options?: {
@@ -11,8 +12,8 @@ export type QueryFnArgs<
 }
 
 export type QueryFn = <
-    QueryMessageType extends Message = Message,
-    ResponseMessageType extends Message = Message,
+    QueryMessageType extends Message = Message, //
+    ResponseMessageType extends Message = Message, //
 >(
-    args: QueryFnArgs<QueryMessageType>,
+    args: QueryFnParams<QueryMessageType>,
 ) => Promise<TypeAndpayloadOf<ResponseMessageType>>

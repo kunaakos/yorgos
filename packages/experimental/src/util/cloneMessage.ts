@@ -1,4 +1,4 @@
-import { Serializable } from '../types'
+import { Serializable } from '../types/base'
 
 const cloneDeep = <T>(obj: T): T => {
     if (
