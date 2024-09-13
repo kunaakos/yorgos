@@ -1,22 +1,23 @@
 import { ActorId, MessageId } from './base'
 
-export type SimpleMessageMeta = {
+type MessageMetaCommon = {
     id: MessageId
-    cat: 'NRE'
     to: ActorId
+    via?: ActorId[]
 }
 
-export type QueryMessageMeta = {
-    id: MessageId
+export type SimpleMessageMeta = MessageMetaCommon & {
+    cat: 'NRE'
+    via?: ActorId[]
+}
+
+export type QueryMessageMeta = MessageMetaCommon & {
     cat: 'Q'
-    to: ActorId
     rsvp: ActorId
 }
 
-export type ResponseMessageMeta = {
-    id: MessageId
+export type ResponseMessageMeta = MessageMetaCommon & {
     cat: 'R'
-    to: ActorId
     irt: MessageId
 }
 

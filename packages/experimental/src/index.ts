@@ -27,3 +27,4 @@ export {
     responseMeta,
 } from './util/metaTemplates'
 export { uniqueId } from './util/uniqueId'
+export { forwardedCopyOf } from './util/message'
