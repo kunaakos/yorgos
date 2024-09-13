@@ -5,8 +5,6 @@ type Id = string
 export type ActorId = Id
 export type MessageId = Id
 
-export type Primitive = string | number | boolean | null
-
 /**
  * This type is basically a subset of JSON, with less cases
  * to handle when processing.
@@ -14,6 +12,8 @@ export type Primitive = string | number | boolean | null
  * but it also stops actors from spilling their guts by passing around
  * references to their internals.
  */
+export type Primitive = string | number | boolean | null
+export type SerializableArray = (Primitive | Serializable | SerializableArray)[]
 export type Serializable = {
-    [key: string]: Primitive | Primitive[] | Serializable | Serializable[]
+    [key: string]: Primitive | Serializable | SerializableArray
 }
