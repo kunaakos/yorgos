@@ -6,7 +6,11 @@ import {
 } from '../types/messageMeta'
 import { uniqueId } from './uniqueId'
 
-export const messageMeta = ({ to }: { to: ActorId }): SimpleMessageMeta => ({
+export const simpleMessageMeta = ({
+    to,
+}: {
+    to: ActorId
+}): SimpleMessageMeta => ({
     id: uniqueId(),
     cat: 'NRE',
     to,

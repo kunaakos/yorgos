@@ -5,7 +5,7 @@ export type { QueryFnParams } from './types/queryFn'
 
 export type { ActorId, MessageId, Serializable } from './types/base'
 
-export type { Actor, MessageList } from './types/system'
+export type { ActorSystem, Actor, MessageList } from './types/system'
 
 export type {
     Message,
@@ -21,5 +21,9 @@ export type {
     ResponseMessageMeta,
 } from './types/messageMeta'
 
-export { messageMeta, queryMeta, responseMeta } from './util/metaTemplates'
+export {
+    simpleMessageMeta,
+    queryMeta,
+    responseMeta,
+} from './util/metaTemplates'
 export { uniqueId } from './util/uniqueId'

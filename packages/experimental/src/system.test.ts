@@ -1,5 +1,5 @@
 import { initSystem } from './system'
-import { messageMeta, responseMeta } from './util/metaTemplates'
+import { simpleMessageMeta, responseMeta } from './util/metaTemplates'
 import { ActorFn } from './types/actor'
 import { WithMessageType, WithMeta, WithPayload } from './types/message'
 import {
@@ -76,7 +76,7 @@ test('actor system quicktest', async () => {
     const testMutationMessage: TestMutationMessage = {
         type: 'TEST_MUTATION',
         payload: dispatchedpayload,
-        meta: messageMeta({
+        meta: simpleMessageMeta({
             to: actor.id,
         }),
     }
