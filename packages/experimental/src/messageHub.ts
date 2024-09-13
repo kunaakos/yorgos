@@ -1,21 +1,11 @@
-import { ActorId, MessageList } from './types'
-
-export type DispatchFn = (messages: MessageList) => void
-export type ConnectActorFn = (args: {
-    id: ActorId
-    deliver: DispatchFn
-}) => void
-export type DisconnectActorFn = (args: { id: ActorId }) => void
-
-export type MessageHub = {
-    dispatch: DispatchFn
-    connectActor: ConnectActorFn
-    disconnectActor: DisconnectActorFn
-}
-
-export type LocalConnection = {
-    deliver: DispatchFn
-}
+import { ActorId } from './types/base'
+import {
+    ConnectActorFn,
+    DisconnectActorFn,
+    LocalConnection,
+    MessageHub,
+} from './types/messageHub'
+import { DispatchFn } from './types/system'
 
 export const initMessageHub = (): MessageHub => {
     const locals: Record<ActorId, LocalConnection> = {}

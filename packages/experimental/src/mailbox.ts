@@ -1,14 +1,8 @@
 import { cloneMessage } from './util/cloneMessage'
-import { Message, MessageList, Nullable } from './types'
-
-export type Mailbox = {
-    hasMessages: () => boolean
-    deliver: (messages: MessageList) => void
-    getOldest: () => Nullable<Message>
-    deleteOldest: () => void
-    getAll: () => MessageList
-    deleteAll: () => void
-}
+import { Mailbox } from './types/system'
+import { Message } from './types/message'
+import { Nullable } from './types/base'
+import { MessageList } from './types/system'
 
 export const initMailbox = (): Mailbox => {
     const storedMessages: MessageList = []

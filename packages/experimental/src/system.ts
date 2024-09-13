@@ -1,17 +1,7 @@
-import { Actor, spawnActor, SpawnActorArgs } from './actor'
-import { DispatchFn, initMessageHub } from './messageHub'
-import { initQuery, QueryFn } from './query'
-
-type SpawnSystemActorArgs<StateType> = Pick<
-    SpawnActorArgs<StateType>,
-    'id' | 'fn' | 'initialState'
->
-
-type ActorSystem = {
-    spawn: <StateType>(args: SpawnSystemActorArgs<StateType>) => Actor
-    query: QueryFn
-    dispatch: DispatchFn
-}
+import { spawnActor } from './actor'
+import { initMessageHub } from './messageHub'
+import { initQuery } from './query'
+import { ActorSystem, SpawnSystemActorArgs } from './types/system'
 
 export const initSystem = (): ActorSystem => {
     const messageHub = initMessageHub()

@@ -1,43 +1,26 @@
-import { ActorFn, spawnActor } from './actor'
-import { ActorId, Message, MessageId } from './types'
-import { uniqueId } from './util/uniqueId'
-import { DispatchFn, MessageHub } from './messageHub'
+import { spawnActor } from './actor'
+import { ActorId, MessageId } from './types'
+import { ActorFn } from './types/actorFn'
+import { MessageHub } from './types/messageHub'
+import { QueryFn } from './types/queryFn'
+import { DispatchFn } from './types/system'
 import { queryMeta } from './util/metaTemplates'
+import { uniqueId } from './util/uniqueId'
 
-type TypeAndpayloadOf<MessageType extends Message = Message> = Pick<
-    MessageType,
-    'type' | 'payload'
->
-
-type QueryOptions = {
-    timeout: number
-}
-
-export type QueryFnArgs<QueryMessageType extends Message = Message> =
-    TypeAndpayloadOf<QueryMessageType> & {
-        id: ActorId
-        options?: QueryOptions
-    }
-
-export type QueryFn = <
-    QueryMessageType extends Message = Message,
-    ResponseMessageType extends Message = Message,
->(
-    args: QueryFnArgs<QueryMessageType>,
-) => Promise<TypeAndpayloadOf<ResponseMessageType>>
-
-type InitQueryArgs = {
-    dispatch: DispatchFn
-    connectActor: MessageHub['connectActor']
-    disconnectActor: MessageHub['disconnectActor']
-}
-
-const DEFAULT_QUERY_OPTIONS: QueryOptions = {
+const DEFAULT_QUERY_OPTIONS = {
     timeout: 500,
 }
 
 export const initQuery =
-    ({ dispatch, connectActor, disconnectActor }: InitQueryArgs): QueryFn =>
+    ({
+        dispatch,
+        connectActor,
+        disconnectActor,
+    }: {
+        dispatch: DispatchFn
+        connectActor: MessageHub['connectActor']
+        disconnectActor: MessageHub['disconnectActor']
+    }): QueryFn =>
     ({ id: to, type, payload, options = DEFAULT_QUERY_OPTIONS }) => {
         /**
          * A single-use actor with a unique ID is spawned for dispatching every query message.

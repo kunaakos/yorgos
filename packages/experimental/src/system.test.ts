@@ -1,6 +1,6 @@
 import { initSystem } from './system'
 import { messageMeta, responseMeta } from './util/metaTemplates'
-import { ActorFn } from './actor'
+import { ActorFn } from './types/actorFn'
 import {
     SimpleMessageMeta,
     QueryMessageMeta,

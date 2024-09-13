@@ -1,7 +1,5 @@
-import { Mailbox } from './mailbox'
-import { StateHandler } from './stateHandler'
-import { ActorFn } from './actor'
-import { DispatchFn } from './messageHub'
+import { ActorFn } from './types/actorFn'
+import { DispatchFn, Mailbox, StateHandler } from './types/system'
 
 export type InitSupervisorArgs = {
     fn: ActorFn<any, any>
