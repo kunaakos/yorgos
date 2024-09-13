@@ -44,11 +44,12 @@ export const initSupervisor = ({
                     dispatch,
                 })
                 newState && state.set(newState)
-            } catch {
+            } catch (error) {
                 /**
                  * Messages that cause errors are dropped, there are no other
                  * supervision policies implemented currently.
                  */
+                console.error(error)
             } finally {
                 mailbox.deleteOldest()
             }
