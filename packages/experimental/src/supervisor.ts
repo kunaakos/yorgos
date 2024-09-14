@@ -1,5 +1,6 @@
 import { ActorFn, ActorStateHandler } from './types/actor'
 import { Mailbox } from './types/mailbox'
+import { Supervisor } from './types/supervisor'
 import { DispatchFn } from './types/system'
 import { condition } from './util/condition'
 import { eventually } from './util/eventually'
@@ -14,7 +15,7 @@ export const initSupervisor = ({
     dispatch: DispatchFn
     state: ActorStateHandler<any>
     mailbox: Mailbox
-}) => {
+}): Supervisor => {
     const processing = condition(false)
 
     /**

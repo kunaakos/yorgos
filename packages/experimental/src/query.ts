@@ -1,4 +1,4 @@
-import { spawnActor } from './actor'
+import { spawn } from './spawn'
 import { ActorFn } from './types/actor'
 import { ActorId, MessageId } from './types/base'
 import { MessageHub } from './types/messageHub'
@@ -51,7 +51,7 @@ export const initQuery =
                 return null
             }
 
-            const queryActor = spawnActor({
+            const queryActor = spawn({
                 id: queryActorId,
                 dispatch: () => {},
                 fn: queryActorFn,
