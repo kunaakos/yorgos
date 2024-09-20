@@ -1,7 +1,7 @@
-import { SystemSpawnFn } from './actor'
-import { ActorId } from './base'
-import { Message } from './message'
-import { QueryFn } from './queryFn'
+import { SystemSpawnFn } from 'src/types/actor'
+import { ActorId } from 'src/types/base'
+import { Message } from 'src/types/message'
+import { QueryFn } from 'src/types/queryFn'
 
 /**
  * Messages are always passed in batches.

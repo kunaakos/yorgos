@@ -1,5 +1,5 @@
-import { Serializable } from './base'
-import { MessageMeta } from './messageMeta'
+import { Serializable } from 'src/types/base'
+import { MessageMeta } from 'src/types/messageMeta'
 
 export type MessageType = Uppercase<string>
 

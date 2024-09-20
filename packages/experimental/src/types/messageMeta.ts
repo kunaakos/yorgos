@@ -1,4 +1,4 @@
-import { ActorId, MessageId } from './base'
+import { ActorId, MessageId } from 'src/types/base'
 
 type MessageMetaCommon = {
     id: MessageId

@@ -1,11 +1,13 @@
-import { spawn } from './spawn'
-import { ActorFn } from './types/actor'
-import { ActorId, MessageId } from './types/base'
-import { MessageHub } from './types/messageHub'
-import { QueryFn } from './types/queryFn'
-import { DispatchFn } from './types/system'
-import { queryMeta } from './util/metaTemplates'
-import { uniqueId } from './util/uniqueId'
+import { ActorFn } from 'src/types/actor'
+import { ActorId, MessageId } from 'src/types/base'
+import { MessageHub } from 'src/types/messageHub'
+import { QueryFn } from 'src/types/queryFn'
+import { DispatchFn } from 'src/types/system'
+
+import { queryMeta } from 'src/util/metaTemplates'
+import { uniqueId } from 'src/util/uniqueId'
+
+import { spawn } from 'src/spawn'
 
 const DEFAULT_QUERY_OPTIONS = {
     timeout: 500,

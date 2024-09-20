@@ -1,9 +1,10 @@
-import { ActorFn, ActorStateHandler } from './types/actor'
-import { Mailbox } from './types/mailbox'
-import { Supervisor } from './types/supervisor'
-import { DispatchFn } from './types/system'
-import { condition } from './util/condition'
-import { eventually } from './util/eventually'
+import { ActorFn, ActorStateHandler } from 'src/types/actor'
+import { Mailbox } from 'src/types/mailbox'
+import { Supervisor } from 'src/types/supervisor'
+import { DispatchFn } from 'src/types/system'
+
+import { condition } from 'src/util/condition'
+import { eventually } from 'src/util/eventually'
 
 export const initSupervisor = ({
     fn,

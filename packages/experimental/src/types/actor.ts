@@ -1,7 +1,7 @@
-import { ActorId, Nullable } from './base'
-import { Message } from './message'
-import { Actor, DispatchFn } from './system'
-import { AsyncOrSync } from './util'
+import { ActorId, Nullable } from 'src/types/base'
+import { Message } from 'src/types/message'
+import { Actor, DispatchFn } from 'src/types/system'
+import { AsyncOrSync } from 'src/types/util'
 
 /**
  * Actors are stateful by default, think of them as functions

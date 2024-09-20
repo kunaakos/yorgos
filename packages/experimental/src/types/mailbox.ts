@@ -1,5 +1,5 @@
-import { Message } from './message'
-import { MessageList } from './system'
+import { Message } from 'src/types/message'
+import { MessageList } from 'src/types/system'
 
 export type Mailbox = {
     hasMessages: () => boolean

@@ -1,4 +1,4 @@
-import { Message } from './message'
+import { Message } from 'src/types/message'
 
 export type TypeAndpayloadOf<
     MessageType extends Message = Message, //

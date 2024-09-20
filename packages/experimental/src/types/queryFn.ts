@@ -1,6 +1,6 @@
-import { ActorId } from './base'
-import { Message } from './message'
-import { TypeAndpayloadOf } from './util'
+import { ActorId } from 'src/types/base'
+import { Message } from 'src/types/message'
+import { TypeAndpayloadOf } from 'src/types/util'
 
 export type QueryFnParams<
     QueryMessageType extends Message = Message, //

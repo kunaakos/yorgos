@@ -1,11 +1,11 @@
-import { ActorId } from './types/base'
+import { ActorId } from 'src/types/base'
 import {
     ConnectActorFn,
     DisconnectActorFn,
     LocalConnection,
     MessageHub,
-} from './types/messageHub'
-import { DispatchFn } from './types/system'
+} from 'src/types/messageHub'
+import { DispatchFn } from 'src/types/system'
 
 export const initMessageHub = (): MessageHub => {
     const locals: Record<ActorId, LocalConnection> = {}

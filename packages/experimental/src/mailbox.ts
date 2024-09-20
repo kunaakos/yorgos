@@ -1,7 +1,8 @@
-import { cloneMessage } from './util/cloneMessage'
-import { Message } from './types/message'
-import { MessageList } from './types/system'
-import { Mailbox } from './types/mailbox'
+import { Mailbox } from 'src/types/mailbox'
+import { Message } from 'src/types/message'
+import { MessageList } from 'src/types/system'
+
+import { cloneMessage } from 'src/util/cloneMessage'
 
 export const initMailbox = (): Mailbox => {
     const storedMessages: MessageList = []

@@ -1,8 +1,9 @@
-import { initStateHandler } from './stateHandler'
-import { initSupervisor } from './supervisor'
-import { initMailbox } from './mailbox'
-import { SpawnFn } from './types/actor'
-import { MessageList } from './types/system'
+import { SpawnFn } from 'src/types/actor'
+import { MessageList } from 'src/types/system'
+
+import { initMailbox } from 'src/mailbox'
+import { initStateHandler } from 'src/stateHandler'
+import { initSupervisor } from 'src/supervisor'
 
 /**
  * The most important thing about `Actor`s is that they're just closures.

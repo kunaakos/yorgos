@@ -1,7 +1,8 @@
-import { spawn } from './spawn'
-import { initMessageHub } from './messageHub'
-import { initQuery } from './query'
-import { ActorSystem } from './types/system'
+import { ActorSystem } from 'src/types/system'
+
+import { initMessageHub } from 'src/messageHub'
+import { initQuery } from 'src/query'
+import { spawn } from 'src/spawn'
 
 export const initSystem = (): ActorSystem => {
     const messageHub = initMessageHub()

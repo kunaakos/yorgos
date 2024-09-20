@@ -1,4 +1,4 @@
-import { ActorStateHandler } from './types/actor'
+import { ActorStateHandler } from 'src/types/actor'
 
 export const initStateHandler = <StateType = any>({
     initialState,

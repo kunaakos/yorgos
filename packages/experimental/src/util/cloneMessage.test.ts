@@ -1,4 +1,4 @@
-import { cloneMessage } from './cloneMessage'
+import { cloneMessage } from 'src/util/cloneMessage'
 
 describe('cloneMessage', () => {
     test('should clone plain JS objects', () => {

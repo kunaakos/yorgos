@@ -1,14 +1,16 @@
-import { initSystem } from './system'
-import { simpleMessageMeta, responseMeta } from './util/metaTemplates'
-import { ActorFn } from './types/actor'
-import { WithMessageType, WithMeta, WithPayload } from './types/message'
+import { ActorFn } from 'src/types/actor'
+import { WithMessageType, WithMeta, WithPayload } from 'src/types/message'
 import {
     QueryMessageMeta,
     ResponseMessageMeta,
     SimpleMessageMeta,
-} from './types/messageMeta'
+} from 'src/types/messageMeta'
 
-jest.mock('./util/uniqueId', () => ({
+import { responseMeta, simpleMessageMeta } from 'src/util/metaTemplates'
+
+import { initSystem } from 'src/system'
+
+jest.mock('src/util/uniqueId', () => ({
     uniqueId: (() => {
         let index = 1
         return () => `MOCK_ID_${index++}`

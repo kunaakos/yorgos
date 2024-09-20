@@ -1,7 +1,8 @@
-import { ActorId } from '../types/base'
-import { Message } from '../types/message'
-import { cloneMessage } from './cloneMessage'
-import { uniqueId } from './uniqueId'
+import { ActorId } from 'src/types/base'
+import { Message } from 'src/types/message'
+
+import { cloneMessage } from 'src/util/cloneMessage'
+import { uniqueId } from 'src/util/uniqueId'
 
 export const forwardedCopyOf = <MessageType extends Message>({
     message,

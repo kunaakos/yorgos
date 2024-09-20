@@ -6,4 +6,7 @@ export default {
     testRegex: '(\\.test\\.ts)$',
     testPathIgnorePatterns: ['/node_modules/', '/build/'],
     collectCoverage: false,
+    moduleNameMapper: {
+        '^src/(.*)$': '<rootDir>/src/$1',
+    },
 }
