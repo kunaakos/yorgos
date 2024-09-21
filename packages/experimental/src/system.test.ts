@@ -4,7 +4,7 @@ import { plainMeta, responseMetaTo } from 'src/util/metaTemplates'
 
 import { initSystem } from 'src/system'
 
-import { PlainMessage, QueryMessage, ResponseMessage } from './types/message'
+import { PlainMessage, QueryMessage, ResponseMessage } from 'src/types/message'
 
 jest.mock('src/util/uniqueId', () => ({
     uniqueId: (() => {

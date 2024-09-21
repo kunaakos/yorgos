@@ -22,9 +22,9 @@ export type {
 export { initSystem } from 'src/system'
 
 export {
-    plainMeta as simpleMessageMeta,
+    plainMeta,
     queryMeta,
-    responseMetaTo as responseMeta,
+    responseMetaTo,
 } from 'src/util/metaTemplates'
 export { uniqueId } from './util/uniqueId'
 export { forwardedCopyOf } from './util/message'
