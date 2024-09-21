@@ -10,7 +10,7 @@ export type WithMessageType<
 }
 
 export type WithPayload<
-    PayloadType extends Serializable = Serializable, //
+    PayloadType extends Serializable | null = Serializable | null, //
 > = {
     payload: PayloadType
 }
@@ -21,4 +21,4 @@ export type WithMeta<
     meta: MetaType
 }
 
-export type Message = WithMessageType & WithMeta & Partial<WithPayload>
+export type Message = WithMessageType & WithMeta & WithPayload

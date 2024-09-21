@@ -42,9 +42,7 @@ export const initQuery =
                 ) {
                     resolve({
                         type: responseMsg.type,
-                        ...(responseMsg.payload
-                            ? { payload: responseMsg.payload }
-                            : {}),
+                        payload: responseMsg.payload,
                     })
                 } else {
                     reject(new Error('Unexpected query response received.'))
@@ -64,7 +62,7 @@ export const initQuery =
             dispatch([
                 {
                     type,
-                    ...(payload ? { payload } : {}),
+                    payload,
                     meta: queryMeta({
                         id: queryId,
                         to,

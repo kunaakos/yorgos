@@ -1,10 +1,10 @@
 import { ActorId } from 'src/types/base'
 import { Message } from 'src/types/message'
-import { TypeAndpayloadOf } from 'src/types/util'
+import { TypeAndPayloadOf } from 'src/types/util'
 
 export type QueryFnParams<
     QueryMessageType extends Message = Message, //
-> = TypeAndpayloadOf<QueryMessageType> & {
+> = TypeAndPayloadOf<QueryMessageType> & {
     id: ActorId
     options?: {
         timeout: number
@@ -16,4 +16,4 @@ export type QueryFn = <
     ResponseMessageType extends Message = Message, //
 >(
     args: QueryFnParams<QueryMessageType>,
-) => Promise<TypeAndpayloadOf<ResponseMessageType>>
+) => Promise<TypeAndPayloadOf<ResponseMessageType>>
