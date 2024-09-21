@@ -39,8 +39,12 @@ I'm still short of a few utilities that make this usable, expect examples once I
 
 ## Development
 
+In the project root:
+
 `npm run tests` to run tests for all packages
+
 `npm run builds` to build all packages
+
 `npm run format` to format the entire repo (`js`, `ts`, `json`)
 
 ### `NOTE`s
