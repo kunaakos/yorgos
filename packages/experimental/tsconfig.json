@@ -1,6 +1,7 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
+        "esModuleInterop": true, // NOTE: this is needed because of jest only, this package has no deps or non-es modules
         "paths": {
             "src/*": ["./src/*"]
         }
