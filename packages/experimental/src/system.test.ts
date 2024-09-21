@@ -1,14 +1,10 @@
 import { ActorFn } from 'src/types/actor'
-import { WithMessageType, WithMeta, WithPayload } from 'src/types/message'
-import {
-    QueryMessageMeta,
-    ResponseMessageMeta,
-    SimpleMessageMeta,
-} from 'src/types/messageMeta'
 
-import { responseMeta, simpleMessageMeta } from 'src/util/metaTemplates'
+import { plainMeta, responseMetaTo } from 'src/util/metaTemplates'
 
 import { initSystem } from 'src/system'
+
+import { PlainMessage, QueryMessage, ResponseMessage } from './types/message'
 
 jest.mock('src/util/uniqueId', () => ({
     uniqueId: (() => {
@@ -20,15 +16,20 @@ jest.mock('src/util/uniqueId', () => ({
 const delay = (millis: number) =>
     new Promise((resolve) => setTimeout(resolve, millis))
 
-type TestMutationMessage = WithMessageType<'TEST_MUTATION'> &
-    WithPayload<{ string: string }> &
-    WithMeta<SimpleMessageMeta>
-type TestQueryMessage = WithMessageType<'TEST_QUERY'> &
-    WithPayload<{ string: 'test query' }> &
-    WithMeta<QueryMessageMeta>
-type TestResponseMessage = WithMessageType<'TEST_RESPONSE'> &
-    WithPayload<{ string: 'test response' }> &
-    WithMeta<ResponseMessageMeta>
+type TestMutationMessage = PlainMessage<
+    'TEST_MUTATION', //
+    { string: string } //
+>
+
+type TestQueryMessage = QueryMessage<
+    'TEST_QUERY', //
+    { string: 'test query' } //
+>
+
+type TestResponseMessage = ResponseMessage<
+    'TEST_RESPONSE', //
+    { string: 'test response' } //
+>
 
 test('actor system quicktest', async () => {
     const expectedMessageLog: string[] = []
@@ -56,7 +57,7 @@ test('actor system quicktest', async () => {
             const testResponseMessage: TestResponseMessage = {
                 type: 'TEST_RESPONSE',
                 payload: { string: 'test response' },
-                meta: responseMeta(msg.meta),
+                meta: responseMetaTo(msg.meta),
             }
             dispatch([testResponseMessage])
             return null
@@ -73,12 +74,12 @@ test('actor system quicktest', async () => {
     })
 
     eventLog.push(1)
-    // test NRE message and make sure actors cannot mutate source message references
+    // test P message and make sure actors cannot mutate source message references
     const dispatchedpayload = { string: 'not mutated' }
     const testMutationMessage: TestMutationMessage = {
         type: 'TEST_MUTATION',
         payload: dispatchedpayload,
-        meta: simpleMessageMeta({
+        meta: plainMeta({
             to: actor.id,
         }),
     }
@@ -108,7 +109,7 @@ test('actor system quicktest', async () => {
         payload: { string: 'not mutated' },
         meta: {
             id: 'MOCK_ID_1',
-            cat: 'NRE',
+            cat: 'P',
             to: 'TEST_ACTOR',
         },
     })

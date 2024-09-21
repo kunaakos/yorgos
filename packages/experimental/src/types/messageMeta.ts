@@ -6,9 +6,8 @@ type MessageMetaCommon = {
     via?: ActorId[]
 }
 
-export type SimpleMessageMeta = MessageMetaCommon & {
-    cat: 'NRE'
-    via?: ActorId[]
+export type PlainMessageMeta = MessageMetaCommon & {
+    cat: 'P'
 }
 
 export type QueryMessageMeta = MessageMetaCommon & {
@@ -22,6 +21,6 @@ export type ResponseMessageMeta = MessageMetaCommon & {
 }
 
 export type MessageMeta =
-    | SimpleMessageMeta
+    | PlainMessageMeta
     | QueryMessageMeta
     | ResponseMessageMeta

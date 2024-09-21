@@ -1,24 +1,46 @@
-import { Serializable } from 'src/types/base'
-import { MessageMeta } from 'src/types/messageMeta'
+import { Nullable, Serializable } from 'src/types/base'
+import {
+    MessageMeta,
+    PlainMessageMeta,
+    QueryMessageMeta,
+    ResponseMessageMeta,
+} from 'src/types/messageMeta'
 
-export type MessageType = Uppercase<string>
+export type MessageTypeIdentifier = Uppercase<string>
 
-export type WithMessageType<
-    CustomMessageType extends MessageType = MessageType, //
+export type Message<
+    CustomMessageType extends MessageTypeIdentifier = MessageTypeIdentifier,
+    PayloadType extends Nullable<Serializable> = Nullable<Serializable>,
+    MetaType extends MessageMeta = MessageMeta,
 > = {
     type: CustomMessageType
-}
-
-export type WithPayload<
-    PayloadType extends Serializable | null = Serializable | null, //
-> = {
     payload: PayloadType
-}
-
-export type WithMeta<
-    MetaType extends MessageMeta = MessageMeta, //
-> = {
     meta: MetaType
 }
 
-export type Message = WithMessageType & WithMeta & WithPayload
+export type PlainMessage<
+    CustomMessageType extends MessageTypeIdentifier = MessageTypeIdentifier,
+    PayloadType extends Nullable<Serializable> = Nullable<Serializable>,
+> = {
+    type: CustomMessageType
+    payload: PayloadType
+    meta: PlainMessageMeta
+}
+
+export type QueryMessage<
+    CustomMessageType extends MessageTypeIdentifier = MessageTypeIdentifier,
+    PayloadType extends Nullable<Serializable> = Nullable<Serializable>,
+> = {
+    type: CustomMessageType
+    payload: PayloadType
+    meta: QueryMessageMeta
+}
+
+export type ResponseMessage<
+    CustomMessageType extends MessageTypeIdentifier = MessageTypeIdentifier,
+    PayloadType extends Nullable<Serializable> = Nullable<Serializable>,
+> = {
+    type: CustomMessageType
+    payload: PayloadType
+    meta: ResponseMessageMeta
+}

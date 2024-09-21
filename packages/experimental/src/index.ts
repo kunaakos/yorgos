@@ -7,14 +7,14 @@ export type { ActorSystem, Actor, MessageList } from 'src/types/system'
 
 export type {
     Message,
-    MessageType,
-    WithMessageType,
-    WithPayload,
-    WithMeta,
+    PlainMessage,
+    QueryMessage,
+    ResponseMessage,
+    MessageTypeIdentifier,
 } from 'src/types/message'
 
 export type {
-    SimpleMessageMeta,
+    PlainMessageMeta,
     QueryMessageMeta,
     ResponseMessageMeta,
 } from 'src/types/messageMeta'
@@ -22,9 +22,9 @@ export type {
 export { initSystem } from 'src/system'
 
 export {
-    simpleMessageMeta,
+    plainMeta as simpleMessageMeta,
     queryMeta,
-    responseMeta,
+    responseMetaTo as responseMeta,
 } from 'src/util/metaTemplates'
 export { uniqueId } from './util/uniqueId'
 export { forwardedCopyOf } from './util/message'

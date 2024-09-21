@@ -1,19 +1,15 @@
 import { ActorId, MessageId } from 'src/types/base'
 import {
+    PlainMessageMeta,
     QueryMessageMeta,
     ResponseMessageMeta,
-    SimpleMessageMeta,
 } from 'src/types/messageMeta'
 
 import { uniqueId } from 'src/util/uniqueId'
 
-export const simpleMessageMeta = ({
-    to,
-}: {
-    to: ActorId
-}): SimpleMessageMeta => ({
+export const plainMeta = ({ to }: { to: ActorId }): PlainMessageMeta => ({
     id: uniqueId(),
-    cat: 'NRE',
+    cat: 'P',
     to,
 })
 
@@ -32,7 +28,7 @@ export const queryMeta = ({
     rsvp,
 })
 
-export const responseMeta = ({
+export const responseMetaTo = ({
     rsvp,
     id,
 }: QueryMessageMeta): ResponseMessageMeta => ({
