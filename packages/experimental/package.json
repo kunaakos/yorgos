@@ -1,16 +1,16 @@
 {
     "name": "@yorgos/experimental",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "description": "TS actor system",
     "main": "dist/esm/index.js",
     "files": [
         "/dist"
     ],
-    "repository": { 
-        "type": "git", 
+    "repository": {
+        "type": "git",
         "url": "https://github.com/kunaakos/yorgos",
         "directory": "/packages/experimental"
-    }, 
+    },
     "scripts": {
         "test": "jest",
         "build": "rm -rf dist && tspc --build tsconfig.es6build.json"
