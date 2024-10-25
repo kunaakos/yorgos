@@ -33,6 +33,16 @@ export const initQuery =
             const queryId: MessageId = uniqueId()
             const queryActorId: ActorId = uniqueId()
             /**
+             * To handle timeouts, one must simply dispose of the query actor and reject the pending `queryPromise`.
+             * Any subsequent responses will be discarded (as of the current implementation),
+             * but this will not halt any ongoing process in the queried actor.
+             */
+            const timeoutId = setTimeout(() => {
+                disconnectActor({ id: queryActorId })
+                reject(new Error('Query timed out.'))
+            }, options.timeout)
+
+            /**
              * The actor function handles unexpected responses, but does not time out by itself.
              */
             const queryActorFn: ActorFn<null> = ({ msg: responseMsg }) => {
@@ -40,24 +50,28 @@ export const initQuery =
                     responseMsg.meta.cat === 'R' &&
                     responseMsg.meta.irt === queryId
                 ) {
+                    clearTimeout(timeoutId)
+                    disconnectActor({ id: queryActorId })
                     resolve({
                         type: responseMsg.type,
                         payload: responseMsg.payload,
                     })
                 } else {
+                    clearTimeout(timeoutId)
+                    disconnectActor({ id: queryActorId })
                     reject(new Error('Unexpected query response received.'))
                 }
-                disconnectActor({ id: queryActorId })
                 return null
             }
 
-            const queryActor = spawn({
-                id: queryActorId,
-                dispatch: () => {},
-                fn: queryActorFn,
-                initialState: null,
-            })
-            connectActor(queryActor)
+            connectActor(
+                spawn({
+                    id: queryActorId,
+                    dispatch: () => {},
+                    fn: queryActorFn,
+                    initialState: null,
+                }),
+            )
 
             dispatch([
                 {
@@ -70,16 +84,5 @@ export const initQuery =
                     }),
                 },
             ])
-
-            /**
-             * To handle timeouts, one must simply dispose of the query actor and reject the pending `queryPromise`.
-             * Any subsequent responses will be discarded (as of the current implementation),
-             * but this will not halt any ongoing process in the queried actor.
-             * TODO: add timeout value to `QueryMessageMeta`, so queried actors can limit themselves.
-             */
-            setTimeout(() => {
-                disconnectActor({ id: queryActorId })
-                reject(new Error('Query timed out.'))
-            }, options.timeout)
         })
     }

@@ -136,6 +136,64 @@ describe('actor system', () => {
         })
     })
 
+    test('query timeouts', async () => {
+        const messageLog: string[] = []
+        const unexpectedMessageLog: string[] = []
+
+        const TEST_ACTOR_ID = 'TEST_ACTOR'
+
+        const actorFn: ActorFn<null, TestQueryMessage> = async ({
+            msg,
+            dispatch,
+        }) => {
+            if (msg.type === 'TEST_QUERY') {
+                messageLog.push(JSON.stringify(msg))
+                await delay(10)
+                const testResponseMessage: TestResponseMessage = {
+                    type: 'TEST_RESPONSE',
+                    payload: { string: 'test response' },
+                    meta: responseMetaTo(msg.meta),
+                }
+                dispatch([testResponseMessage]) // NOTE: this should not be delivered
+                return null
+            } else {
+                unexpectedMessageLog.push(JSON.stringify(msg))
+                return null
+            }
+        }
+
+        const system = initSystem()
+        system.spawn({
+            id: TEST_ACTOR_ID,
+            fn: actorFn,
+            initialState: null,
+        })
+
+        expect(
+            system.query<TestQueryMessage, TestResponseMessage>({
+                id: TEST_ACTOR_ID,
+                type: 'TEST_QUERY',
+                payload: { string: 'test query' },
+                options: { timeout: 5 },
+            }),
+        ).rejects.toThrow('Query timed out.')
+
+        await delay(15)
+
+        expect(messageLog).toHaveLength(1)
+        expect(unexpectedMessageLog).toHaveLength(0)
+        expect(JSON.parse(messageLog[0] as string)).toStrictEqual({
+            type: 'TEST_QUERY',
+            payload: { string: 'test query' },
+            meta: {
+                id: 'MOCK_ID_1',
+                cat: 'Q',
+                to: 'TEST_ACTOR',
+                rsvp: 'MOCK_ID_2',
+            },
+        })
+    })
+
     test('async execution order', async () => {
         const messageLog: string[] = []
         const unexpectedMessageLog: string[] = []
