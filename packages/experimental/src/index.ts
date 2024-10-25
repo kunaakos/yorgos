@@ -21,10 +21,6 @@ export type {
 
 export { initSystem } from 'src/system'
 
-export {
-    plainMeta,
-    queryMeta,
-    responseMetaTo,
-} from 'src/util/metaTemplates'
+export { plainMeta, queryMeta, responseMetaTo } from 'src/util/metaTemplates'
 export { uniqueId } from './util/uniqueId'
 export { forwardedCopyOf } from './util/message'
