@@ -1,17 +1,13 @@
 import { ActorSystem } from 'src/types/system'
 
-import { initMessageHub } from 'src/messageHub'
+import { initMessaging } from 'src/messaging'
 import { initQuery } from 'src/query'
 import { spawn } from 'src/spawn'
 
 export const initSystem = (): ActorSystem => {
-    const messageHub = initMessageHub()
+    const messaging = initMessaging()
 
-    const query = initQuery({
-        dispatch: messageHub.dispatch,
-        connectActor: messageHub.connectActor,
-        disconnectActor: messageHub.disconnectActor,
-    })
+    const query = initQuery({ messaging })
 
     /**
      * The only difference between independently spawned and "system" actors is
@@ -25,19 +21,19 @@ export const initSystem = (): ActorSystem => {
      * the ability to message actors directly.
      */
     const systemSpawnFn: ActorSystem['spawn'] = ({ id, fn, initialState }) => {
-        const actor = spawn({
+        const newActor = spawn({
             id,
             fn,
             initialState,
-            dispatch: messageHub.dispatch,
+            dispatch: messaging.dispatch,
         })
-        messageHub.connectActor(actor)
-        return actor // <- this is where the trouble lies
+        messaging.connectActor(newActor)
+        return newActor // <- this is where the trouble lies
     }
 
     return {
         spawn: systemSpawnFn,
         query,
-        dispatch: messageHub.dispatch,
+        dispatch: messaging.dispatch,
     }
 }

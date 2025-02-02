@@ -1,8 +1,7 @@
 import { ActorFn } from 'src/types/actor'
 import { ActorId, MessageId } from 'src/types/base'
-import { MessageHub } from 'src/types/messageHub'
+import { Messaging } from 'src/types/messaging'
 import { QueryFn } from 'src/types/queryFn'
-import { DispatchFn } from 'src/types/system'
 
 import { queryMeta } from 'src/util/metaTemplates'
 import { uniqueId } from 'src/util/uniqueId'
@@ -14,15 +13,7 @@ const DEFAULT_QUERY_OPTIONS = {
 }
 
 export const initQuery =
-    ({
-        dispatch,
-        connectActor,
-        disconnectActor,
-    }: {
-        dispatch: DispatchFn
-        connectActor: MessageHub['connectActor']
-        disconnectActor: MessageHub['disconnectActor']
-    }): QueryFn =>
+    ({ messaging }: { messaging: Messaging }): QueryFn =>
     ({ id: to, type, payload, options = DEFAULT_QUERY_OPTIONS }) => {
         /**
          * A single-use actor with a unique ID is spawned for dispatching every query message.
@@ -38,7 +29,7 @@ export const initQuery =
              * but this will not halt any ongoing process in the queried actor.
              */
             const timeoutId = setTimeout(() => {
-                disconnectActor({ id: queryActorId })
+                messaging.disconnectActor({ id: queryActorId })
                 reject(new Error('Query timed out.'))
             }, options.timeout)
 
@@ -51,20 +42,20 @@ export const initQuery =
                     responseMsg.meta.irt === queryId
                 ) {
                     clearTimeout(timeoutId)
-                    disconnectActor({ id: queryActorId })
+                    messaging.disconnectActor({ id: queryActorId })
                     resolve({
                         type: responseMsg.type,
                         payload: responseMsg.payload,
                     })
                 } else {
                     clearTimeout(timeoutId)
-                    disconnectActor({ id: queryActorId })
+                    messaging.disconnectActor({ id: queryActorId })
                     reject(new Error('Unexpected query response received.'))
                 }
                 return null
             }
 
-            connectActor(
+            messaging.connectActor(
                 spawn({
                     id: queryActorId,
                     dispatch: () => {},
@@ -73,7 +64,7 @@ export const initQuery =
                 }),
             )
 
-            dispatch([
+            messaging.dispatch([
                 {
                     type,
                     payload,
