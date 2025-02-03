@@ -13,16 +13,16 @@ export type DisconnectActorFn = (args: {
     id: ActorId //
 }) => void
 
-export type ConnectRouterFn = (args: {
+export type ConnectRemoteFn = (args: {
     actor: Actor //
 }) => void
 
-export type DisconnectRouterFn = () => void
+export type DisconnectRemoteFn = () => void
 
 export type Messaging = {
     dispatch: DispatchFn
     connectActor: ConnectActorFn
     disconnectActor: DisconnectActorFn
-    connectRouter: ConnectRouterFn
-    disconnectRouter: DisconnectRouterFn
+    connectRemote: ConnectRemoteFn
+    disconnectRemote: DisconnectRemoteFn
 }

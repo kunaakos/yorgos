@@ -9,14 +9,16 @@ import { Actor, DispatchFn } from 'src/types/system'
 
 export const initMessaging = (): Messaging => {
     const locals: Record<ActorId, ActorConnection> = {}
-    let router: Nullable<Actor> = null
+    let remote: Nullable<Actor> = null
 
     const dispatch: DispatchFn = (messageList) => {
         messageList.forEach((message) => {
             if (locals[message.meta.to]) {
                 locals[message.meta.to]?.deliver([message])
+            } else if (remote) {
+                remote.deliver([message])
             } else {
-                router && router.deliver([message])
+                // TODO: handle messages without recipients
             }
         })
     }
@@ -44,23 +46,23 @@ export const initMessaging = (): Messaging => {
         }
     }
 
-    const connectRouter = ({ actor }: { actor: Actor }) => {
-        if (!router) {
-            router = actor
+    const connectRemote = ({ actor }: { actor: Actor }) => {
+        if (!remote) {
+            remote = actor
         } else {
-            throw new Error('A router is already connected.')
+            throw new Error('A Remote is already connected.')
         }
     }
 
-    const disconnectRouter = () => {
-        router = null
+    const disconnectRemote = () => {
+        remote = null
     }
 
     return {
         connectActor,
         disconnectActor,
-        connectRouter,
-        disconnectRouter,
+        connectRemote,
+        disconnectRemote,
         dispatch,
     }
 }

@@ -35,5 +35,7 @@ export const initSystem = (): ActorSystem => {
         spawn: systemSpawnFn,
         query,
         dispatch: messaging.dispatch,
+        connectRemote: messaging.connectRemote,
+        disconnectRemote: messaging.disconnectRemote,
     }
 }
