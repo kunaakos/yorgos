@@ -5,64 +5,65 @@ import {
     DisconnectActorFn,
     Messaging,
 } from 'src/types/messaging'
-import { Actor, DispatchFn } from 'src/types/system'
+import { CreateLinkFn, RemoteLink } from 'src/types/remoting'
+import { DispatchFn } from 'src/types/system'
 
 export const initMessaging = (): Messaging => {
     const locals: Record<ActorId, ActorConnection> = {}
-    let remote: Nullable<Actor> = null
+    let remoteLink: Nullable<RemoteLink> = null
 
     const dispatch: DispatchFn = (messageList) => {
         messageList.forEach((message) => {
             if (locals[message.meta.to]) {
                 locals[message.meta.to]?.deliver([message])
-            } else if (remote) {
-                remote.deliver([message])
+            } else if (remoteLink) {
+                remoteLink.dispatch([message])
             } else {
                 // TODO: handle messages without recipients
             }
         })
     }
 
-    const publish = (id: ActorId) => {
-        throw new Error(`cannot publish ${id}: not implemented`)
-    }
-    const unpublish = (id: ActorId) => {
-        throw new Error(`cannot publish ${id}: not implemented`)
-    }
-
-    const connectActor: ConnectActorFn = (actorConnection) => {
-        locals[actorConnection.id] = actorConnection
-        if (actorConnection.isPublic) {
-            publish(actorConnection.id)
+    const connectActor: ConnectActorFn = ({ actor, isPublic }) => {
+        locals[actor.id] = { ...actor, ...(isPublic ? { isPublic: true } : {}) }
+        if (remoteLink && isPublic) {
+            remoteLink.join(actor.id)
         }
     }
 
     const disconnectActor: DisconnectActorFn = ({ id }) => {
         if (locals[id]) {
-            locals[id].isPublic && unpublish(id)
+            remoteLink && locals[id].isPublic && remoteLink.leave(id)
             delete locals[id]
         } else {
             throw new Error('Could not disconnect: ActorId not found')
         }
     }
 
-    const connectRemote = ({ actor }: { actor: Actor }) => {
-        if (!remote) {
-            remote = actor
+    const connectRemotes = (createLink: CreateLinkFn) => {
+        if (remoteLink) {
+            throw new Error(
+                'Cannot connect to system: remotes already connected.',
+            )
         } else {
-            throw new Error('A Remote is already connected.')
+            remoteLink = createLink({ systemId: 'todo', dispatch })
         }
     }
 
-    const disconnectRemote = () => {
-        remote = null
+    const disconnectRemotes = () => {
+        if (!remoteLink) {
+            throw new Error('Cannot disconnect from system: not connected.')
+        } else {
+            remoteLink.destroy()
+            remoteLink = null
+        }
     }
 
     return {
         connectActor,
         disconnectActor,
-        connectRemote,
-        disconnectRemote,
+        connectRemotes,
+        disconnectRemotes,
         dispatch,
     }
 }

@@ -1,7 +1,7 @@
 import { SystemSpawnFn } from 'src/types/actor'
 import { ActorId } from 'src/types/base'
 import { Message } from 'src/types/message'
-import { ConnectRemoteFn, DisconnectRemoteFn } from 'src/types/messaging'
+import { ConnectRemotesFn, DisconnectRemotesFn } from 'src/types/messaging'
 import { QueryFn } from 'src/types/queryFn'
 
 /**
@@ -51,6 +51,6 @@ export type ActorSystem = {
      * This could lead down a path where more components of the system
      * are implemented as actors, which sounds interesting to explore 🤔
      */
-    connectRemote: ConnectRemoteFn
-    disconnectRemote: DisconnectRemoteFn
+    connectRemotes: ConnectRemotesFn
+    disconnectRemotes: DisconnectRemotesFn
 }

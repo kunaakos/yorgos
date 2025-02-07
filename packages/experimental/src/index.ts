@@ -1,9 +1,19 @@
 export type { ActorFn } from 'src/types/actor'
 export type { QueryFnParams } from 'src/types/queryFn'
 
-export type { ActorId, MessageId, Serializable } from 'src/types/base'
+export type {
+    ActorId,
+    MessageId,
+    ActorSystemId,
+    Serializable,
+} from 'src/types/base'
 
-export type { ActorSystem, Actor, MessageList } from 'src/types/system'
+export type {
+    ActorSystem,
+    Actor,
+    MessageList,
+    DispatchFn,
+} from 'src/types/system'
 
 export type {
     Message,
@@ -18,6 +28,8 @@ export type {
     QueryMessageMeta,
     ResponseMessageMeta,
 } from 'src/types/messageMeta'
+
+export type { SystemLink, RemoteLink, Router } from 'src/types/remoting'
 
 export { initSystem } from 'src/system'
 

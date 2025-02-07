@@ -27,7 +27,7 @@ export const initSystem = (): ActorSystem => {
             initialState,
             dispatch: messaging.dispatch,
         })
-        messaging.connectActor(newActor)
+        messaging.connectActor({ actor: newActor, isPublic: true }) // TODO publish only when necessary
         return newActor // <- this is where the trouble lies
     }
 
@@ -35,7 +35,7 @@ export const initSystem = (): ActorSystem => {
         spawn: systemSpawnFn,
         query,
         dispatch: messaging.dispatch,
-        connectRemote: messaging.connectRemote,
-        disconnectRemote: messaging.disconnectRemote,
+        connectRemotes: messaging.connectRemotes,
+        disconnectRemotes: messaging.disconnectRemotes,
     }
 }

@@ -55,14 +55,15 @@ export const initQuery =
                 return null
             }
 
-            messaging.connectActor(
-                spawn({
+            messaging.connectActor({
+                actor: spawn({
                     id: queryActorId,
                     dispatch: () => {},
                     fn: queryActorFn,
                     initialState: null,
                 }),
-            )
+                isPublic: true, // TODO: publish only when necessary?
+            })
 
             messaging.dispatch([
                 {
