@@ -27,6 +27,7 @@ export type {
 export type { SystemLink, RemoteLink, Router } from 'src/types/remoting'
 
 export { initSystem } from 'src/system'
+export { initRouter } from 'src/router'
 
 export { plainMeta, queryMeta, responseMetaTo } from 'src/util/metaTemplates'
 export { uniqueId } from './util/uniqueId'
