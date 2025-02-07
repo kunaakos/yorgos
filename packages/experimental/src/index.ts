@@ -8,12 +8,7 @@ export type {
     Serializable,
 } from 'src/types/base'
 
-export type {
-    ActorSystem,
-    Actor,
-    MessageList,
-    DispatchFn,
-} from 'src/types/system'
+export type { ActorSystem, Actor, DispatchFn } from 'src/types/system'
 
 export type {
     Message,

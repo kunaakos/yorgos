@@ -65,7 +65,7 @@ describe('actor system', () => {
                 to: actor.id,
             }),
         }
-        system.dispatch([testMutationMessage])
+        system.dispatch(testMutationMessage)
         await delay(1) // allow the ActorFn to execute
 
         expect(dispatchedpayload).toStrictEqual({ string: 'not mutated' })
@@ -98,7 +98,7 @@ describe('actor system', () => {
                     payload: { string: 'test response' },
                     meta: responseMetaTo(msg.meta),
                 }
-                dispatch([testResponseMessage])
+                dispatch(testResponseMessage)
                 return null
             } else {
                 unexpectedMessageLog.push(JSON.stringify(msg))
@@ -154,7 +154,7 @@ describe('actor system', () => {
                     payload: { string: 'test response' },
                     meta: responseMetaTo(msg.meta),
                 }
-                dispatch([testResponseMessage]) // NOTE: this should not be delivered
+                dispatch(testResponseMessage) // NOTE: this should not be delivered
                 return null
             } else {
                 unexpectedMessageLog.push(JSON.stringify(msg))
@@ -224,7 +224,7 @@ describe('actor system', () => {
                     payload: { string: `${msg.payload.string} response` },
                     meta: responseMetaTo(msg.meta),
                 }
-                dispatch([testResponseMessage])
+                dispatch(testResponseMessage)
                 return null
             } else {
                 unexpectedMessageLog.push(JSON.stringify(msg))
@@ -246,7 +246,7 @@ describe('actor system', () => {
                 to: TEST_ACTOR_ID,
             }),
         }
-        system.dispatch([testMessage])
+        system.dispatch(testMessage)
         eventLog.push('1: plain message dispatched')
 
         const slowResponsePromise = system.query<

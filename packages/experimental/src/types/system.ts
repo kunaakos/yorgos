@@ -5,18 +5,11 @@ import { ConnectRemotesFn, DisconnectRemotesFn } from 'src/types/messaging'
 import { QueryFn } from 'src/types/queryFn'
 
 /**
- * Messages are always passed in batches.
- * They hold the address of the recipient, belong to different categories,
- * as defined in `MessageMeta`.
- */
-export type MessageList = Message[]
-
-/**
  * Outgoing messages are dispatched using a `DispatchFn`.
- * Passing a correctly addressed `MessageList` to a `DispatchFn`
+ * Passing a correctly addressed `Message` to a `DispatchFn`
  * is all that's needed for delivery.
  */
-export type DispatchFn = (messages: MessageList) => void
+export type DispatchFn = (messages: Message) => void
 
 /**
  * Actor references are just a pair of ID and the actor's own `DispatchFn`.

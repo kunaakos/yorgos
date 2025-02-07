@@ -12,16 +12,14 @@ export const initMessaging = (): Messaging => {
     const locals: Record<ActorId, ActorConnection> = {}
     let remoteLink: Nullable<RemoteLink> = null
 
-    const dispatch: DispatchFn = (messageList) => {
-        messageList.forEach((message) => {
-            if (locals[message.meta.to]) {
-                locals[message.meta.to]?.deliver([message])
-            } else if (remoteLink) {
-                remoteLink.dispatch([message])
-            } else {
-                // TODO: handle messages without recipients
-            }
-        })
+    const dispatch: DispatchFn = (message) => {
+        if (locals[message.meta.to]) {
+            locals[message.meta.to]?.deliver(message)
+        } else if (remoteLink) {
+            remoteLink.dispatch(message)
+        } else {
+            // TODO: handle messages without recipients
+        }
     }
 
     const connectActor: ConnectActorFn = ({ actor, isPublic }) => {

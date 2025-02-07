@@ -1,12 +1,11 @@
 import { Message } from 'src/types/message'
-import { MessageList } from 'src/types/system'
 
 export type Mailbox = {
     hasMessages: () => boolean
     isEmpty: () => boolean
-    deliver: (messages: MessageList) => void
+    deliver: (message: Message) => void
     getOldest: () => Message
     deleteOldest: () => void
-    getAll: () => MessageList
+    getAll: () => Message[]
     deleteAll: () => void
 }

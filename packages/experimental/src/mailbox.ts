@@ -1,17 +1,16 @@
 import { Mailbox } from 'src/types/mailbox'
 import { Message } from 'src/types/message'
-import { MessageList } from 'src/types/system'
 
 import { cloneMessage } from 'src/util/cloneMessage'
 
 export const initMailbox = (): Mailbox => {
-    const storedMessages: MessageList = []
+    const storedMessages: Message[] = []
 
     const hasMessages = () => Boolean(storedMessages.length)
     const isEmpty = () => !Boolean(storedMessages.length)
 
-    const deliver = (messages: MessageList) => {
-        storedMessages.push(...messages.map(cloneMessage))
+    const deliver = (message: Message) => {
+        storedMessages.push(cloneMessage(message))
     }
 
     const getOldest = (): Message => {
@@ -24,7 +23,7 @@ export const initMailbox = (): Mailbox => {
         storedMessages.shift()
     }
 
-    const getAll = (): MessageList => {
+    const getAll = (): Message[] => {
         return [...storedMessages.map(cloneMessage)]
     }
 

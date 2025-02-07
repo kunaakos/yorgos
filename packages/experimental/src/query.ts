@@ -65,16 +65,14 @@ export const initQuery =
                 isPublic: true, // TODO: publish only when necessary?
             })
 
-            messaging.dispatch([
-                {
-                    type,
-                    payload,
-                    meta: queryMeta({
-                        id: queryId,
-                        to,
-                        rsvp: queryActorId,
-                    }),
-                },
-            ])
+            messaging.dispatch({
+                type,
+                payload,
+                meta: queryMeta({
+                    id: queryId,
+                    to,
+                    rsvp: queryActorId,
+                }),
+            })
         })
     }

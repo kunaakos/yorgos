@@ -1,5 +1,5 @@
 import { SpawnFn } from 'src/types/actor'
-import { MessageList } from 'src/types/system'
+import { Message } from 'src/types/message'
 
 import { initMailbox } from 'src/mailbox'
 import { initStateHandler } from 'src/stateHandler'
@@ -22,8 +22,8 @@ export const spawn: SpawnFn = ({ id, fn, dispatch, initialState }) => {
         mailbox,
     })
 
-    const deliver = (messages: MessageList) => {
-        mailbox.deliver(messages)
+    const deliver = (message: Message) => {
+        mailbox.deliver(message)
         supervisor.processMessages()
     }
 
