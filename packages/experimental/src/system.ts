@@ -4,8 +4,12 @@ import { initMessaging } from 'src/messaging'
 import { initQuery } from 'src/query'
 import { spawn } from 'src/spawn'
 
-export const initSystem = (): ActorSystem => {
-    const messaging = initMessaging()
+import { ActorSystemId } from './types/base'
+import { uniqueId } from './util/uniqueId'
+
+export const initSystem = ({ id }: { id?: ActorSystemId }): ActorSystem => {
+    const systemId = id || uniqueId()
+    const messaging = initMessaging({ systemId })
 
     const query = initQuery({ messaging })
 

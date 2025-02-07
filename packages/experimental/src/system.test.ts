@@ -43,6 +43,7 @@ describe('actor system', () => {
         const messageLog: string[] = []
 
         const TEST_ACTOR_ID = 'TEST_ACTOR'
+        const TEST_SYSTEM_ID = 'TEST_SYSTEM'
 
         const actorFn: ActorFn<null, TestMessageWithPayload> = ({ msg }) => {
             messageLog.push(JSON.stringify(msg))
@@ -50,7 +51,7 @@ describe('actor system', () => {
             return null
         }
 
-        const system = initSystem()
+        const system = initSystem({ id: TEST_SYSTEM_ID })
         const actor = system.spawn({
             id: TEST_ACTOR_ID,
             fn: actorFn,
@@ -86,6 +87,7 @@ describe('actor system', () => {
         const unexpectedMessageLog: string[] = []
 
         const TEST_ACTOR_ID = 'TEST_ACTOR'
+        const TEST_SYSTEM_ID = 'TEST_SYSTEM'
 
         const actorFn: ActorFn<null, TestQueryMessage> = async ({
             msg,
@@ -106,7 +108,7 @@ describe('actor system', () => {
             }
         }
 
-        const system = initSystem()
+        const system = initSystem({ id: TEST_SYSTEM_ID })
         system.spawn({
             id: TEST_ACTOR_ID,
             fn: actorFn,
@@ -141,6 +143,7 @@ describe('actor system', () => {
         const unexpectedMessageLog: string[] = []
 
         const TEST_ACTOR_ID = 'TEST_ACTOR'
+        const TEST_SYSTEM_ID = 'TEST_SYSTEM'
 
         const actorFn: ActorFn<null, TestQueryMessage> = async ({
             msg,
@@ -162,7 +165,7 @@ describe('actor system', () => {
             }
         }
 
-        const system = initSystem()
+        const system = initSystem({ id: TEST_SYSTEM_ID })
         system.spawn({
             id: TEST_ACTOR_ID,
             fn: actorFn,
@@ -200,6 +203,7 @@ describe('actor system', () => {
         const eventLog: string[] = []
 
         const TEST_ACTOR_ID = 'TEST_ACTOR'
+        const TEST_SYSTEM_ID = 'TEST_SYSTEM'
 
         const actorFn: ActorFn<null, TestQueryMessage | TestMessage> = async ({
             msg,
@@ -232,7 +236,7 @@ describe('actor system', () => {
             }
         }
 
-        const system = initSystem()
+        const system = initSystem({ id: TEST_SYSTEM_ID })
         system.spawn({
             id: TEST_ACTOR_ID,
             fn: actorFn,

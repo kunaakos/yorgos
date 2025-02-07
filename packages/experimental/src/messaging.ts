@@ -1,4 +1,4 @@
-import { ActorId, Nullable } from 'src/types/base'
+import { ActorId, ActorSystemId, Nullable } from 'src/types/base'
 import {
     ActorConnection,
     ConnectActorFn,
@@ -8,7 +8,11 @@ import {
 import { CreateLinkFn, RemoteLink } from 'src/types/remoting'
 import { DispatchFn } from 'src/types/system'
 
-export const initMessaging = (): Messaging => {
+export const initMessaging = ({
+    systemId,
+}: {
+    systemId: ActorSystemId
+}): Messaging => {
     const locals: Record<ActorId, ActorConnection> = {}
     let remoteLink: Nullable<RemoteLink> = null
 
@@ -44,7 +48,7 @@ export const initMessaging = (): Messaging => {
                 'Cannot connect to system: remotes already connected.',
             )
         } else {
-            remoteLink = createLink({ systemId: 'todo', dispatch })
+            remoteLink = createLink({ systemId, dispatch })
         }
     }
 
