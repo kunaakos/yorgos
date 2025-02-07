@@ -49,6 +49,11 @@ export const initMessaging = ({
             )
         } else {
             remoteLink = createLink({ systemId, dispatch })
+            Object.values(locals).forEach(
+                (actorConnection) =>
+                    actorConnection.isPublic &&
+                    remoteLink?.join(actorConnection.id),
+            )
         }
     }
 
@@ -56,7 +61,7 @@ export const initMessaging = ({
         if (!remoteLink) {
             throw new Error('Cannot disconnect from system: not connected.')
         } else {
-            remoteLink.destroy()
+            remoteLink.destroy() // NOTE: handles `RemoteLink.leave`s
             remoteLink = null
         }
     }
