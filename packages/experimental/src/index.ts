@@ -24,7 +24,13 @@ export type {
     ResponseMessageMeta,
 } from 'src/types/messageMeta'
 
-export type { SystemLink, RemoteLink, Router } from 'src/types/remoting'
+export type {
+    SystemLink,
+    RemoteLink,
+    Router,
+    CreateLinkFn,
+    DestroyLinkFn,
+} from 'src/types/remoting'
 
 export { initSystem } from 'src/system'
 export { initRouter } from 'src/router'

@@ -9,7 +9,7 @@ import { QueryFn } from 'src/types/queryFn'
  * Passing a correctly addressed `Message` to a `DispatchFn`
  * is all that's needed for delivery.
  */
-export type DispatchFn = (messages: Message) => void
+export type DispatchFn = (message: Message) => void
 
 /**
  * Actor references are just a pair of ID and the actor's own `DispatchFn`.
