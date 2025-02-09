@@ -32,18 +32,6 @@ export type ActorSystem = {
     spawn: SystemSpawnFn
     query: QueryFn
     dispatch: DispatchFn
-    /**
-     * NOTE: this is starting to look like a refactor.
-     * Messaging needs to be rewritten as an actor itself,
-     * these two functions should be wrappers for dispatching messages.
-     * The main obstacle: actor refs cannot be transmitted via messages
-     * and actor state is no good place for them either
-     * but introducing the `refs` container for actors would solve this
-     * by allowing an actor registry to be shared between the `ActorSystem`
-     * and the `Actor` that handles messaging.
-     * This could lead down a path where more components of the system
-     * are implemented as actors, which sounds interesting to explore 🤔
-     */
     connectRemotes: ConnectRemotesFn
     disconnectRemotes: DisconnectRemotesFn
 }

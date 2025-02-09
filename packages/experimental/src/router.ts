@@ -1,5 +1,5 @@
 import { ActorId, ActorSystemId } from 'src/types/base'
-import { RemoteLink, Router, SystemLink } from 'src/types/remoting'
+import { Downlink, Router, Uplink } from 'src/types/remoting'
 import { DispatchFn } from 'src/types/system'
 
 import { map } from 'src/util/mapAndSetUtils'
@@ -24,70 +24,76 @@ import { map } from 'src/util/mapAndSetUtils'
  */
 
 export const initRouter = (): Router => {
-    const systems: Map<ActorSystemId, SystemLink & { actors: Set<ActorId> }> =
-        new Map()
+    const connections: Map<
+        ActorSystemId,
+        { downlink: Downlink; actors: Set<ActorId> }
+    > = new Map()
     const actorLocations: Map<ActorId, ActorSystemId> = new Map()
 
     const dispatch: DispatchFn = //
         (message) => {
             try {
                 map.get(
-                    systems,
+                    connections,
                     map.get(
                         actorLocations,
                         message.meta.to,
                         'Router error: ActorId not found, message discarded.',
                     ),
                     'Router error: SystemLink missing.',
-                ).dispatch(message)
+                ).downlink.dispatch(message)
             } catch (error) {
                 //@ts-expect-error
                 console.warn(error.message)
             }
         }
 
-    const makeJoinFn: (remoteSystemId: ActorSystemId) => RemoteLink['join'] =  //
+    const makeJoinFn: (remoteSystemId: ActorSystemId) => Uplink['publish'] =  //
         (remoteSystemId) => (actorId) => {
             if (actorLocations.has(actorId))
                 throw new Error('Router error: ActorId collision.')
             map.get(
-                systems,
+                connections,
                 remoteSystemId,
                 'Router error: cannot join, SystemLink missing',
             ).actors.add(actorId)
             actorLocations.set(actorId, remoteSystemId)
         }
 
-    const makeLeaveFn: (remoteSystemId: ActorSystemId) => RemoteLink['leave'] =  //
+    const makeLeaveFn: (remoteSystemId: ActorSystemId) => Uplink['unpublish'] =  //
         (remoteSystemId) => (actorId) => {
             map.get(
-                systems,
+                connections,
                 remoteSystemId,
                 'Router error: cannot leave, SystemLink missing',
             ).actors.delete(actorId)
             actorLocations.delete(actorId)
         }
 
-    const destroyLink = //
-        (remoteSystemId: ActorSystemId) => {
-            // unpublish all addresses of link
-            map.get(
-                systems,
+    const makeDestroyFn: (remoteSystemId: ActorSystemId) => Uplink['destroy'] =  //
+        (remoteSystemId) => () => {
+            const connecion = map.get(
+                connections,
                 remoteSystemId,
                 'Router error: cannot destroy link, SystemLink missing.',
-            ).actors.forEach((actorId) => actorLocations.delete(actorId))
+            )
+            // unpublish all addresses of link
+            connecion.actors.forEach((actorId) =>
+                actorLocations.delete(actorId),
+            )
+            // call cleanup callback
+            connecion.downlink.onDestroyed()
             // delete link
-            systems.delete(remoteSystemId)
+            connections.delete(remoteSystemId)
         }
 
     const createLink: Router['createLink'] = //
-        ({ systemId, dispatch: systemDispatch }) => {
+        (downlink) => {
             map.setIfNotPresent(
-                systems,
-                systemId,
+                connections,
+                downlink.systemId,
                 {
-                    systemId,
-                    dispatch: systemDispatch,
+                    downlink,
                     actors: new Set(),
                 },
                 'Router error: cannot link system, ActorSystemId collision.',
@@ -95,16 +101,13 @@ export const initRouter = (): Router => {
 
             return {
                 dispatch,
-                join: makeJoinFn(systemId),
-                leave: makeLeaveFn(systemId),
-                destroy: () => {
-                    destroyLink(systemId)
-                },
+                publish: makeJoinFn(downlink.systemId),
+                unpublish: makeLeaveFn(downlink.systemId),
+                destroy: makeDestroyFn(downlink.systemId),
             }
         }
 
     return {
         createLink,
-        destroyLink,
     }
 }

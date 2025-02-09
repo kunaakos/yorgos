@@ -25,11 +25,14 @@ export type {
 } from 'src/types/messageMeta'
 
 export type {
-    SystemLink,
-    RemoteLink,
-    Router,
+    Downlink,
+    Uplink,
     CreateLinkFn,
-    DestroyLinkFn,
+    Router,
+    TransportHost,
+    InitTransportHostFn,
+    TransportClient,
+    InitTransportClientFn,
 } from 'src/types/remoting'
 
 export { initSystem } from 'src/system'
