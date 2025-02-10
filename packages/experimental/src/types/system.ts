@@ -17,7 +17,7 @@ export type DispatchFn = (message: Message) => void
  */
 export type Actor = {
     id: ActorId // this is what actors can be addressed by
-    deliver: DispatchFn //. as in "delivers mail to the actor"
+    dispatch: DispatchFn // deliver messages directly to the actor's mailbox
 }
 
 /**

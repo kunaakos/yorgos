@@ -22,10 +22,10 @@ export const spawn: SpawnFn = ({ id, fn, dispatch, initialState }) => {
         mailbox,
     })
 
-    const deliver = (message: Message) => {
+    const actorDispatch = (message: Message) => {
         mailbox.deliver(message)
         supervisor.processMessages()
     }
 
-    return { id, deliver }
+    return { id, dispatch: actorDispatch }
 }

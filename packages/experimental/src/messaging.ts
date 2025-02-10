@@ -18,7 +18,7 @@ export const initMessaging = ({
 
     const dispatch: DispatchFn = (message) => {
         if (locals[message.meta.to]) {
-            locals[message.meta.to]?.actor.deliver(message)
+            locals[message.meta.to]?.actor.dispatch(message)
         } else if (uplink) {
             uplink.dispatch(message)
         } else {

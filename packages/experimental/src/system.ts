@@ -18,7 +18,7 @@ export const initSystem = ({ id }: { id?: ActorSystemId }): ActorSystem => {
      * that system actors come pre-connected to a message hub,
      * which holds a reference to them so they're not garbage collected.
      *
-     * NOTE: a reference to the `deliver` function returned by the `SpawnFn`
+     * NOTE: a reference to the `DispatchFn` function returned by the `SpawnFn`
      * will keep the actor from being garbage collected.
      * This also keeps the system together.
      * I'm yet to figure out how to solve this elegantly while keeping
