@@ -1,5 +1,5 @@
 export type { ActorFn } from 'src/types/actor'
-export type { QueryFnParams } from 'src/types/queryFn'
+export type { QueryFnParams, QueryOptions } from 'src/types/queryFn'
 
 export type {
     ActorId,

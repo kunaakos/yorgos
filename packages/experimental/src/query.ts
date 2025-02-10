@@ -1,20 +1,26 @@
 import { ActorFn } from 'src/types/actor'
 import { ActorId, MessageId } from 'src/types/base'
 import { Messaging } from 'src/types/messaging'
-import { QueryFn } from 'src/types/queryFn'
+import { QueryFn, QueryOptions } from 'src/types/queryFn'
 
 import { queryMeta } from 'src/util/metaTemplates'
 import { uniqueId } from 'src/util/uniqueId'
 
 import { spawn } from 'src/spawn'
 
-const DEFAULT_QUERY_OPTIONS = {
+const DEFAULT_QUERY_OPTIONS: QueryOptions = {
     timeout: 500,
+    isPublic: false,
 }
 
 export const initQuery =
     ({ messaging }: { messaging: Messaging }): QueryFn =>
-    ({ id: to, type, payload, options = DEFAULT_QUERY_OPTIONS }) => {
+    ({ id: to, type, payload, options: optionsProvided = {} }) => {
+        const options: QueryOptions = {
+            ...DEFAULT_QUERY_OPTIONS,
+            ...optionsProvided,
+        }
+
         /**
          * A single-use actor with a unique ID is spawned for dispatching every query message.
          * The creation and destruction of this actor is enclosed in this promise executor.
@@ -55,6 +61,11 @@ export const initQuery =
                 return null
             }
 
+            /**
+             * You can query public actors residing in remote systems
+             * by passing `isPublic: true` - in this case the query actor's
+             * id will be published by messaging.
+             */
             messaging.connectActor({
                 actor: spawn({
                     id: queryActorId,
@@ -62,7 +73,7 @@ export const initQuery =
                     fn: queryActorFn,
                     initialState: null,
                 }),
-                isPublic: true, // TODO: publish only when necessary?
+                isPublic: options.isPublic,
             })
 
             messaging.dispatch({

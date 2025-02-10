@@ -36,6 +36,7 @@ export type ActorFn<StateType, MessageType extends Message = Message> = (
 export type SpawnFnParams<StateType> = {
     id: ActorId
     fn: ActorFn<StateType, any>
+    isPublic?: boolean
     dispatch: DispatchFn
     initialState: StateType
 }
@@ -47,7 +48,7 @@ export type SpawnFn = <StateType>(params: SpawnFnParams<StateType>) => Actor
  */
 export type SystemSpawnFnParams<StateType> = Pick<
     SpawnFnParams<StateType>,
-    'id' | 'fn' | 'initialState'
+    'id' | 'fn' | 'isPublic' | 'initialState'
 >
 export type SystemSpawnFn = <StateType>(
     args: SystemSpawnFnParams<StateType>,
