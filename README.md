@@ -2,25 +2,32 @@
 
 It is **an experiment** in writing an actor framework in TypeScript that allows one to create apps that are distributed across: processes, tabs, iframes, workers, embedded devices, serverless functions - in any combination.
 
-It aims to be simple and modular, with the least amount of dependencies possible, which allows you to have actors running on tiny and cheap SoCs while effortlessly communicating with the rest of the application.
-
-It's being written in a style that makes it easy to port to other languages.
+It aims to be modular, simple enough so nodes can be implemented in other languages and to use the least amount of dependencies possible (currently: none).
 
 ## Overview
 
 Actors communicate via **messages that can be serialized as JSON**, and address each other by ID only. IDs are plain strings that you can pass along in messages.
 
-Multiple actor systems can be linked together to form a single network. Transports are not implemented as part of the framework, but remotin and templates for implementing your own transports are. This allows you to choose your own protocols and deal with security as you wish (see code examples).
+Multiple actor systems can be linked together to form a single network. Transports are not implemented as part of the framework, but remoting and templates for implementing your own transports are. This allows you to choose your own protocols and deal with security as you wish (see code examples). 
 
 **Actor hierarchy is flat** (*parent-child relations and system map will be added* for cases that require a strict hierarchy), which makes it easier for actors to roam across diffent systems in your network.
 
 The framework is *very verbose and explicit* and encourages you to be so in your own code. It tries to be as strict as possible, but it's all JS at the end of the day, and TypeScript coverage is meant to help you write and refactor code, not validate your data. That being said, *validation will be added as an optional feature*.
 
-## Caveats
+## Missing features and future goals
 
-- things are not optimized for performance, but for simplicity and convenience
-- important functionality is still missing: hierarchies, proper supervision, behaviors, persistence, validation... but the framework is already usable for simple projects
+Although some of the goals of the project are already achieved, it's still in its infancy, and is being built for a personal project that required it.
+
+Weakneses:
 - structure, API and naming will change wildly with every major release
+- important functionality is still missing: hierarchies, proper supervision, behaviors, persistence, validation...
+- things are not optimized for performance, but for simplicity and convenience
+
+What's coming:
+- a simple approach to delay-tolerant messaging
+- SoC-compatible modules (the core functions required to run an actor independently rely on async/await, which is not supported on JS runtimes that run on SoCs)
+- figuring out an approach to supervision fit for this model
+- figuring out a flexible approach to persistence
 
 ## Packages and version control
 
@@ -30,13 +37,30 @@ If/when a stable version arises, it'll be published as (a) different package(s),
 
 ## Code examples (and guide)
 
-This guide was written for `2.0`, assumes you're using node.js, and requires you to deal with (the very simple) app structure yourself.
+This guide
+- was written for `2.0.0`
+- assumes you're using node.js and TypeScript with a strict config and good support for them in your IDE
+- requires you to deal with (the very simple) app structure yourself
+- skips first-party imports in code snippets, but **expect to find all types exported from the published package**
 
-It will eventually move on to live as an example in the repo, but I find this approach to be better for documenting and explaining.
+<details>
 
-Imports are left out of examples, but **expect to find all types exported from the published package**.
+<summary>tsconfig recommendations</summary>
 
-**Sorry for any inconsistencies and typos.**
+```JSON
+{
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+}
+```
+
+</details>
 
 #### Message and state types
 
@@ -54,6 +78,7 @@ And the outgoing message it'll respond to the `REQUEST_LOG_ENTRIES` queries with
 ```TypeScript
 type LogEntriesMessage = ResponseMessage<'LOG_ENTRIES', { entries: string[] }>
 ```
+
 <details>
 
 <summary>On message types and structure.</summary>
@@ -61,7 +86,7 @@ type LogEntriesMessage = ResponseMessage<'LOG_ENTRIES', { entries: string[] }>
 The messages are of different subtypes of `Message`:
 - `PlainMessage`s that you don't expect a response to
 - `QueryMessage`s expect a response
-- ...which should be a `ResponseMessage`
+- responses to queries are `ResponseMessage`s
 
 They accept two type parameters: 
 - `MessageTypeIdentifier`, which is an uppercase string
@@ -83,14 +108,16 @@ type LoggerState = { entries: string[] }
 
 Ideally, actor state should also be `Serializable`, but this isn't enforced, because you often have to hold references to all sorts of objects and functions the framework cannot provide.
 
-In the future, a separate context object will be added for storing messy references, and `Serializable` actor states will be enforced, so you can snapshot actor state or dispatch it via a message to be stored by another node.
+In the future, a separate context object will be added for storing messy references, and `Serializable` actor states will be enforced. This is needed so you can snapshot actor state or dispatch it via a message to be stored by another node.
 
 </details>
 
 
 #### The Actor Function
 
-The actor function - like a lot else in this framework - is just a type. We pass the previously written state and message types to `ActorFn`, and implement a simple function that takes a `Message` as input, and returns the updated state (or `null`, if nothing changed).
+The actor function - like a lot else in this framework - is just a type definition as far as the framework is concerned. As you'll see, most of yorgos is like this: defining the shapes of building blocks you can use to build your system.
+
+By starting with declaring the type of our function as `ActorFn<LoggerState, LoggerExpectedMessages>`, we assure that everything in the fucntion body is checked by TypeScript. Try typing this instead of copy-pasting.
 
 ```TypeScript
 export const loggerActorFn: ActorFn<LoggerState, LoggerExpectedMessages> = ({ msg, state, dispatch }) => {
@@ -135,7 +162,7 @@ system.spawn({
 
 We gave this actor a hard-coded, human-readable `ActorId` - which is a necessary evil sometimes - but you should pass a `uniqueId()` instead in most cases.
 
-You now have a working system that you can message and query, but before we do that, let's write a *message template* to help with that. There's no builtin for this, and you don't have to do it, but it's a good pattern.
+You now have a working system that you can message and query, but before we do that, let's write a *message template*. There's no builtin for this, and you don't have to do it, but it's a good pattern.
 
 ```TypeScript
 export const newLogEntryMessage = ({
@@ -152,9 +179,7 @@ export const newLogEntryMessage = ({
 
 ```
 
-These are verbose, but a breeze to write, because autocomplete does most of it on an IDE with good TS support.
-
-Let's add some new entries...
+Let's add some new entries using the template...
 
 ```TypeScript
 ;[
@@ -188,11 +213,17 @@ const getLogEntriesVia = async (system: ActorSystem) => {
 }
 ```
 
+With the above, querying becomes as easy as:
+
+```TypeScript
+console.log(await getLogEntriesVia(system))
+```
+
 <details>
 
 <summary>Subtleties of queries</summary>
 
-- `QueryFn` doesn't take a complete `RequestLogEntriesMessage` as a parameter, but creates one internally. This is done because for queries to work, the system needs to spawn a temporary actor for each query which will sit around and wait for an adequately addressed `ResponseMessage` or time out.
+- `QueryFn` doesn't take a complete object of `RequestLogEntriesMessage` as a parameter, but creates one internally. This is done because for queries to work, the system needs to spawn a temporary actor for each query which will sit around and wait for an adequately addressed `ResponseMessage` or time out, which requires accurately crafted meta and some actor lifecycle management to work.
 - There is no guarantee that you'll get a message of the expected type as an answer, and query does no validation other then checking `Message.meta`.
 - Queries are not to be started by actors.
 
@@ -211,9 +242,9 @@ The examples use the well-known `ws` library, and implement a simple protocol to
 
 <summary>The theory - which suggest you revisit after finishing the guide.</summary>
 
-...because it's a bit messy.
+Up goes down, down goes up, this bit is addmittedly a bit messy and confusing, and likely to change. The goal here is to eventually chain functions that form transports, which will allow flexibility with authentication, fine grained message filtering/logging and features like delay tolerant messaging. This will likely be reimplemented in a manner similar to how express deals with middleware, for instance - but two-way communication makes that a bit tricky.
 
-Instead of using `EventEmitter`s or some other event-based or pubsub implementation (which would be less portable and/or could get more complicated), two sets of callbacks (`Uplink` and `Downlink`) are exchanged between components to link them together into **streams** (not *node streams*) that have an `ActorSystem` at the bottom and a `Router` at the top. Like so:
+Instead of using `EventEmitter`s or some other event-based or pubsub implementation, two sets of callbacks (`Uplink` and `Downlink`) are exchanged between components to link them together into **streams** (not *node streams*) that have an `ActorSystem` at the bottom and a `Router` at the top. Like so:
 
 ```
    ┌────► Uplink ──────┐
@@ -244,8 +275,6 @@ Upstream component responsibilities:
 - keep track of `ActorId`s published by the downstream component **OR** pass them further upstream
 - dispatch messages going to the node
 - signal when the connection closes
-
-Up goes down, down goes up, it's messy and confusing, but easy to implement once you got the idea, and very to use once implemented.
 
 </details>
 
@@ -421,7 +450,6 @@ export const initWebSocketClient: InitTransportClientFn<{ address: string | URL 
 
 </details>
 
-
 #### Putting it all together
 Take the `system` (and the rest of the code from the previous examples), and connect it to a `Router`:
 
@@ -430,10 +458,10 @@ const router = initRouter()
 system.connectRemotes(router.createLink)
 ```
 
-Now connect the same router to a websocket server implemented in the previous section:
+Now connect the same router to a WebSocket host implemented in the previous section:
 
 ```TypeScript
-initWebSocketServer(router.createLink)
+initWebSocketHost(router.createLink)
 ```
 
 Create another system in a separate application:
@@ -461,12 +489,11 @@ To verify if it worked, let's reuse the query from a previous example:
 console.log(await getLogEntriesVia(clientSystem))
 ```
 
-Any number of clients can connect to this host, it'll create links for new connections automatically, and you can attach multiple instances to the same router.
+Any number of clients can connect to this host, it'll create links for new connections automatically. You can even attach multiple instances of a `TransportHost` to the same router.
 
-Any protocol can be implemented as a transport, and used simultaneously with any other protocol.
+You can implement `TransportHost`s for different protocols/libraries/hardware - anything as long as you can get JSON from A to B - and use several of them in the same system. 
 
-This is the end, I hope you had fun!
-
+This is the end, I hope you had fun, and see the possibilites such an approach offers!
 
 ## Reading the code
 
@@ -500,4 +527,6 @@ This package is built as an ES module using the typescript compiler, without any
 
 The package relies on some path mapping set in `tsconfig.json`, these need to be transformed to relative paths in `dist`, which is handled using [typescript-transform-paths](https://github.com/LeDDGroup/typescript-transform-paths) and [ts-patch](https://github.com/nonara/ts-patch).
 
- 
+## Inspiration
+
+Kudos to the authors of [nact](https://github.com/nactio/nact) and [comedy](https://github.com/untu/comedy), two projects which have inspired a lot of this framework.
