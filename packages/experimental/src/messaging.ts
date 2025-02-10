@@ -18,7 +18,7 @@ export const initMessaging = ({
 
     const dispatch: DispatchFn = (message) => {
         if (locals[message.meta.to]) {
-            locals[message.meta.to]?.deliver(message)
+            locals[message.meta.to]?.actor.deliver(message)
         } else if (uplink) {
             uplink.dispatch(message)
         } else {
@@ -26,10 +26,10 @@ export const initMessaging = ({
         }
     }
 
-    const connectActor: ConnectActorFn = ({ actor, isPublic }) => {
-        locals[actor.id] = { ...actor, ...(isPublic ? { isPublic: true } : {}) }
-        if (uplink && isPublic) {
-            uplink.publish(actor.id)
+    const connectActor: ConnectActorFn = (actorConnection) => {
+        locals[actorConnection.actor.id] = actorConnection
+        if (uplink && actorConnection.isPublic) {
+            uplink.publish(actorConnection.actor.id)
         }
     }
 
@@ -59,7 +59,7 @@ export const initMessaging = ({
             Object.values(locals).forEach(
                 (actorConnection) =>
                     actorConnection.isPublic &&
-                    uplink?.publish(actorConnection.id),
+                    uplink?.publish(actorConnection.actor.id),
             )
         }
     }

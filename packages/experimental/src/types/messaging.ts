@@ -2,17 +2,12 @@ import { ActorId } from 'src/types/base'
 import { CreateLinkFn } from 'src/types/remoting'
 import { Actor, DispatchFn } from 'src/types/system'
 
-//TODO: unnecessary new type, it's just an Actor and a flag
 export type ActorConnection = {
-    id: ActorId //
-    deliver: DispatchFn //
-    isPublic?: true //
+    actor: Actor
+    isPublic: boolean
 }
 
-export type ConnectActorFn = (args: {
-    actor: Actor
-    isPublic?: boolean
-}) => void
+export type ConnectActorFn = (args: ActorConnection) => void
 
 export type DisconnectActorFn = (args: {
     id: ActorId //
