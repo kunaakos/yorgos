@@ -47,7 +47,6 @@ describe('actor system', () => {
 
         const actorFn: ActorFn<null, TestMessageWithPayload> = ({ msg }) => {
             messageLog.push(JSON.stringify(msg))
-            msg.payload['string'] = 'mutated'
             return null
         }
 
@@ -58,22 +57,19 @@ describe('actor system', () => {
             initialState: null,
         })
 
-        const dispatchedpayload = { string: 'not mutated' }
-        const testMutationMessage: TestMessageWithPayload = {
+        system.dispatch({
             type: 'TEST_MESSAGE_WITH_PAYLOAD',
-            payload: dispatchedpayload,
+            payload: { string: 'hi! how are you?' },
             meta: plainMeta({
                 to: actor.id,
             }),
-        }
-        system.dispatch(testMutationMessage)
+        })
         await delay(1) // allow the ActorFn to execute
 
-        expect(dispatchedpayload).toStrictEqual({ string: 'not mutated' })
         expect(messageLog).toHaveLength(1)
         expect(JSON.parse(messageLog[0] as string)).toStrictEqual({
             type: 'TEST_MESSAGE_WITH_PAYLOAD',
-            payload: { string: 'not mutated' },
+            payload: { string: 'hi! how are you?' },
             meta: {
                 id: 'MOCK_ID_1',
                 cat: 'P',

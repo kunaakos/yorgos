@@ -1,6 +1,11 @@
 import { Mailbox } from 'src/types/mailbox'
 import { Message } from 'src/types/message'
 
+/**
+ * NOTE: messages going in and out of the mailbox are both cloned,
+ * so nothing gets mutated accidentally.
+ * If this ever becomes a perf issue, cloning can be made optional.
+ */
 import { cloneMessage } from 'src/util/cloneMessage'
 
 export const initMailbox = (): Mailbox => {
@@ -28,6 +33,6 @@ export const initMailbox = (): Mailbox => {
         isEmpty,
         deliver,
         getOldest,
-        deleteOldest
+        deleteOldest,
     }
 }
