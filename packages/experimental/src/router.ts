@@ -14,8 +14,7 @@ import { map } from 'src/util/mapAndSetUtils'
  * This `DispatchFn` does not throw,
  * so it doesn't interfere with `Messaging` or transport implementations.
  *
- * The rest of functions will throw ruthlessly
- * and should crash the system/transport.
+ * The router destroys connections on any type of id collision.
  * This is preferable to bugs caused by duplicate IDs
  * or misbehaving transport implementations.
  *
