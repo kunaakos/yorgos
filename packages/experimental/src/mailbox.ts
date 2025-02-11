@@ -23,21 +23,11 @@ export const initMailbox = (): Mailbox => {
         storedMessages.shift()
     }
 
-    const getAll = (): Message[] => {
-        return [...storedMessages.map(cloneMessage)]
-    }
-
-    const deleteAll = () => {
-        storedMessages.splice(0, storedMessages.length)
-    }
-
     return {
         hasMessages,
         isEmpty,
         deliver,
         getOldest,
-        deleteOldest,
-        getAll,
-        deleteAll,
+        deleteOldest
     }
 }
