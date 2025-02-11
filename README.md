@@ -518,7 +518,6 @@ In the project root:
 ### Notes to self
 
 - `// NOTE: ...` comments are shortcuts, hacks, things that are not self-explanatory, poorly implemented etc.
-- had to downgrade `typescript` to `5.5.4` because of [an issue with `ts-transform-paths`](https://github.com/LeDDGroup/typescript-transform-paths/issues/266)
 - incremental builds and composite projects are currently disabled (these will be needed with more packages in this repo, but until then it's easier to just discard the `dist` directory before every build, making sure no junk makes its way to a published package)
 
 ### `@yorgos/experimental` builds
