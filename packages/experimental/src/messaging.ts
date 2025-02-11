@@ -29,13 +29,13 @@ export const initMessaging = ({
     const connectActor: ConnectActorFn = (actorConnection) => {
         locals[actorConnection.actor.id] = actorConnection
         if (uplink && actorConnection.isPublic) {
-            uplink.publish(actorConnection.actor.id)
+            uplink.publish([actorConnection.actor.id])
         }
     }
 
     const disconnectActor: DisconnectActorFn = ({ id }) => {
         if (locals[id]) {
-            uplink && locals[id].isPublic && uplink.unpublish(id)
+            uplink && locals[id].isPublic && uplink.unpublish([id])
             delete locals[id]
         } else {
             throw new Error('Could not disconnect: ActorId not found')
@@ -56,11 +56,10 @@ export const initMessaging = ({
                 },
             }
             uplink = createLink(downlink)
-            Object.values(locals).forEach(
-                (actorConnection) =>
-                    actorConnection.isPublic &&
-                    uplink?.publish(actorConnection.actor.id),
-            )
+            const publicIds = Object.values(locals)
+                .filter((actorConnection) => actorConnection.isPublic)
+                .map((actorConnection) => actorConnection.actor.id)
+            uplink?.publish(publicIds)
         }
     }
 

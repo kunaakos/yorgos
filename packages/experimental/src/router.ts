@@ -49,25 +49,37 @@ export const initRouter = (): Router => {
         }
 
     const makeJoinFn: (remoteSystemId: ActorSystemId) => Uplink['publish'] =  //
-        (remoteSystemId) => (actorId) => {
-            if (actorLocations.has(actorId))
+        (remoteSystemId) => (publishedActorIds) => {
+            if (
+                publishedActorIds.some((id) =>
+                    actorLocations.has(id),
+                )
+            )
                 throw new Error('Router error: ActorId collision.')
-            map.get(
+            const connection = map.get(
                 connections,
                 remoteSystemId,
                 'Router error: cannot join, SystemLink missing',
-            ).actors.add(actorId)
-            actorLocations.set(actorId, remoteSystemId)
+            )
+            connection.actors = connection.actors.union(new Set(publishedActorIds))
+            publishedActorIds.forEach((id) => {
+                actorLocations.set(id, remoteSystemId)
+            })
         }
 
     const makeLeaveFn: (remoteSystemId: ActorSystemId) => Uplink['unpublish'] =  //
-        (remoteSystemId) => (actorId) => {
-            map.get(
+        (remoteSystemId) => (unpublishedActorIds) => {
+            const connection = map.get(
                 connections,
                 remoteSystemId,
                 'Router error: cannot leave, SystemLink missing',
-            ).actors.delete(actorId)
-            actorLocations.delete(actorId)
+            )
+            connection.actors = connection.actors.difference(
+                new Set(unpublishedActorIds),
+            )
+            unpublishedActorIds.forEach((id) => {
+                actorLocations.delete(id)
+            })
         }
 
     const makeDestroyFn: (remoteSystemId: ActorSystemId) => Uplink['destroy'] =  //
@@ -77,14 +89,11 @@ export const initRouter = (): Router => {
                 remoteSystemId,
                 'Router error: cannot destroy link, SystemLink missing.',
             )
-            // unpublish all addresses of link
-            connecion.actors.forEach((actorId) =>
-                actorLocations.delete(actorId),
-            )
-            // call cleanup callback
-            connecion.downlink.onDestroyed()
-            // delete link
+            connecion.actors.forEach((id) => {
+                actorLocations.delete(id)
+            })
             connections.delete(remoteSystemId)
+            connecion.downlink.onDestroyed()
         }
 
     const createLink: Router['createLink'] = //

@@ -1,7 +1,7 @@
 import { ActorId, ActorSystemId } from 'src/types/base'
 import { DispatchFn } from 'src/types/system'
 
-export type MembershipChangeFn = (actorId: ActorId) => void // TODO: these should accept arrays
+export type MembershipChangeFn = (actorIds: ActorId[]) => void
 
 export type Downlink = {
     systemId: ActorSystemId
