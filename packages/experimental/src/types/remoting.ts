@@ -6,37 +6,37 @@ export type MembershipChangeFn = (actorIds: ActorId[]) => void
 export type Downlink = {
     systemId: ActorSystemId
     dispatch: DispatchFn
-    onDestroyed: () => void
+    disconnect: () => void
 }
 
 export type Uplink = {
     dispatch: DispatchFn
     publish: MembershipChangeFn
     unpublish: MembershipChangeFn
-    destroy: () => void
+    disconnect: () => void
 }
 
-export type CreateLinkFn = (downlink: Downlink) => Uplink
+export type LinkFn = (downlink: Downlink) => Uplink | null
 
 export type Router = {
-    createLink: CreateLinkFn
+    link: LinkFn
 }
 
 export type TransportHost = {
     stop: () => Promise<void>
 }
 
-export type InitTransportHostFn<OptionsType> = (
-    args: {
-        createLink: CreateLinkFn
-    } & OptionsType,
-) => Promise<TransportHost>
-
 export type TransportClient = {
     stop: () => Promise<void>
-    createLink: CreateLinkFn
+    link: LinkFn
 }
 
-export type InitTransportClientFn<OptionsType> = (
-    args: OptionsType,
+export type InitTransportHostFn<Options> = (
+    args: {
+        link: LinkFn
+    } & Options,
+) => Promise<TransportHost>
+
+export type InitTransportClientFn<Options> = (
+    args: Options,
 ) => Promise<TransportClient>

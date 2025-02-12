@@ -27,7 +27,7 @@ export type {
 export type {
     Downlink,
     Uplink,
-    CreateLinkFn,
+    LinkFn,
     Router,
     TransportHost,
     InitTransportHostFn,

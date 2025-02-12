@@ -1,9 +1,8 @@
 import { ActorId, ActorSystemId } from 'src/types/base'
-import { Downlink, Router, Uplink } from 'src/types/remoting'
+import { Downlink, LinkFn, Router, Uplink } from 'src/types/remoting'
 import { DispatchFn } from 'src/types/system'
 
 import { createKillswitch } from 'src/util/killswitch'
-import { map } from 'src/util/mapAndSetUtils'
 
 /**
  * This router creates a simple star topology
@@ -23,111 +22,95 @@ import { map } from 'src/util/mapAndSetUtils'
  * the responsibility of the system.
  */
 
+type System = {
+    downLink: Downlink
+    actors: Set<ActorId>
+    killUplink: () => void
+}
+
+type Systems = Map<ActorSystemId, System>
+type Actors = Map<ActorId, System>
+
 export const initRouter = (): Router => {
-    const connections: Map<
-        ActorSystemId,
-        {
-            downlink: Downlink
-            actors: Set<ActorId>
-            killUplink: () => void
-        }
-    > = new Map()
-    const actorLocations: Map<ActorId, ActorSystemId> = new Map()
+    const systems: Systems = new Map()
+    const actorLocations: Actors = new Map()
 
-    const dispatch: DispatchFn = //
-        (message) => {
-            try {
-                map.get(
-                    connections,
-                    map.get(
-                        actorLocations,
-                        message.meta.to,
-                        'Router error: ActorId not found, message discarded.',
-                    ),
-                    'Router error: SystemLink missing.',
-                ).downlink.dispatch(message)
-            } catch (error) {
-                // TODO: trace/warn when logging is added
-            }
-        }
+    const dispatch: DispatchFn = (message) => {
+        const system = actorLocations.get(message.meta.to)
+        if (!system) return
+        system.downLink.dispatch(message)
+    }
 
-    const makeJoinFn: (remoteSystemId: ActorSystemId) => Uplink['publish'] =  //
-        (remoteSystemId) => (publishedActorIds) => {
-            const connection = map.get(
-                connections,
-                remoteSystemId,
-                'Router error: cannot join, SystemLink missing',
-            )
-            if (publishedActorIds.some((id) => actorLocations.has(id))) {
-                // ActorId collision, disconnect the link
-                makeDestroyFn(remoteSystemId)()
-                // TODO: warn when logging is added
-            } else {
-                connection.actors = connection.actors.union(
-                    new Set(publishedActorIds),
-                )
-                publishedActorIds.forEach((id) => {
-                    actorLocations.set(id, remoteSystemId)
-                })
-            }
-        }
-
-    const makeLeaveFn: (remoteSystemId: ActorSystemId) => Uplink['unpublish'] =  //
-        (remoteSystemId) => (unpublishedActorIds) => {
-            const connection = map.get(
-                connections,
-                remoteSystemId,
-                'Router error: cannot leave, SystemLink missing',
-            )
-            connection.actors = connection.actors.difference(
-                new Set(unpublishedActorIds),
-            )
-            unpublishedActorIds.forEach((id) => {
-                actorLocations.delete(id)
+    const publish = (system: System, actorIds: ActorId[]) => {
+        if (actorIds.some((id) => actorLocations.has(id))) {
+            disconnect(system)
+        } else {
+            system.actors = system.actors.union(new Set(actorIds))
+            actorIds.forEach((id) => {
+                actorLocations.set(id, system)
             })
         }
+    }
 
-    const makeDestroyFn: (remoteSystemId: ActorSystemId) => Uplink['destroy'] =  //
-        (remoteSystemId) => () => {
-            const connection = map.get(
-                connections,
-                remoteSystemId,
-                'Router error: cannot destroy link, SystemLink missing.',
-            )
-            connection.killUplink()
-            connection.actors.forEach((id) => {
-                actorLocations.delete(id)
-            })
-            connections.delete(remoteSystemId)
-            connection.downlink.onDestroyed()
+    const unpublish = (system: System, actorIds: ActorId[]) => {
+        system.actors = system.actors.difference(new Set(actorIds))
+        actorIds.forEach((id) => {
+            actorLocations.delete(id)
+        })
+    }
+
+    const remove = (system: System) => {
+        system.actors.forEach((id) => {
+            actorLocations.delete(id)
+        })
+        systems.delete(system.downLink.systemId)
+    }
+
+    const disconnect = (system: System) => {
+        system.killUplink()
+        remove(system)
+        system.downLink.disconnect()
+    }
+
+    const onDisconnected = (system: System) => {
+        system.killUplink()
+        remove(system)
+    }
+
+    const connect: LinkFn = (downlink) => {
+        if (systems.has(downlink.systemId)) {
+            downlink.disconnect()
+            return null
         }
 
-    const createLink: Router['createLink'] = //
-        (downlink) => {
-            const killswitch = createKillswitch({ silent: true })
+        /**
+         * TODO: rethink Killswitch an Uplink/Downlink
+         * If I keep rolling my own solution for this,
+         * which is starting to look like some sort of event bus,
+         * there should be a util that builds the links with
+         * all necessary functionality built in
+         * to be used for implementing transports and remote systems.
+         */
+        const ks = createKillswitch({ silent: true })
 
-            map.setIfNotPresent(
-                connections,
-                downlink.systemId,
-                {
-                    downlink,
-                    actors: new Set() as Set<ActorId>,
-                    killUplink: killswitch.engage,
-                },
-                'Router error: cannot link system, ActorSystemId collision.',
-            )
-
-            const uplink: Uplink = {
-                dispatch: killswitch.wrap(dispatch),
-                publish: killswitch.wrap(makeJoinFn(downlink.systemId)),
-                unpublish: killswitch.wrap(makeLeaveFn(downlink.systemId)),
-                destroy: killswitch.wrap(makeDestroyFn(downlink.systemId)),
-            }
-
-            return uplink
+        const system = {
+            downLink: downlink,
+            actors: new Set() as Set<ActorId>,
+            killUplink: ks.engage,
         }
+        systems.set(downlink.systemId, system)
+
+        const uplink: Uplink = {
+            dispatch: ks.wrap(dispatch),
+            publish: ks.wrap((ids: ActorId[]) => publish(system, ids)),
+            unpublish: ks.wrap((ids: ActorId[]) => unpublish(system, ids)),
+            disconnect: ks.wrap(() => onDisconnected(system)),
+        }
+
+        return uplink
+    }
 
     return {
-        createLink,
+        link: connect,
     }
 }

@@ -22,9 +22,10 @@ export const mockRouterLinks = ({
         const downlink = {
             systemId,
             dispatch: jest.fn(),
-            onDestroyed: jest.fn(),
+            disconnect: jest.fn(),
         }
-        const uplink = router.createLink(downlink)
+        const uplink = router.link(downlink)
+        if (!uplink) throw new Error()
         const mockActorIds: string[] = actorSuffixes.map(
             (actorSuffix) => `${systemId}${actorSuffix}`,
         )

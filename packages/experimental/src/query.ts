@@ -10,7 +10,6 @@ import { spawn } from 'src/spawn'
 
 const DEFAULT_QUERY_OPTIONS: QueryOptions = {
     timeout: 500,
-    isPublic: false,
 }
 
 export const initQuery =
@@ -61,20 +60,14 @@ export const initQuery =
                 return null
             }
 
-            /**
-             * You can query public actors residing in remote systems
-             * by passing `isPublic: true` - in this case the query actor's
-             * id will be published by messaging.
-             */
-            messaging.connectActor({
-                actor: spawn({
+            messaging.connectActor(
+                spawn({
                     id: queryActorId,
                     dispatch: () => {},
                     fn: queryActorFn,
                     initialState: null,
                 }),
-                isPublic: options.isPublic,
-            })
+            )
 
             messaging.dispatch({
                 type,

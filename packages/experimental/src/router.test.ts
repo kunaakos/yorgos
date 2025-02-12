@@ -6,15 +6,16 @@ describe('router', () => {
     test('should discard messages addressed to unpublished actors', () => {
         const router = initRouter()
         const dispatch = jest.fn()
-        const onDestroyed = jest.fn()
-        const uplink = router.createLink({
+        const destroy = jest.fn()
+        const uplink = router.link({
             dispatch,
             systemId: 'TEST',
-            onDestroyed,
+            disconnect: destroy,
         })
+        if (!uplink) throw new Error()
         uplink.dispatch(plainTestMessageTo('nobody in particular'))
         expect(dispatch).toHaveBeenCalledTimes(0)
-        expect(onDestroyed).toHaveBeenCalledTimes(0)
+        expect(destroy).toHaveBeenCalledTimes(0)
     })
 
     test('should route messages to the correct links', () => {
@@ -61,10 +62,10 @@ describe('router', () => {
         uplinks['AX']?.publish(['AX1'])
         uplinks['CX']?.publish(['CX3'])
 
-        expect(downlinks['AX']?.onDestroyed).toHaveBeenCalledTimes(1)
-        expect(downlinks['B']?.onDestroyed).toHaveBeenCalledTimes(0)
-        expect(downlinks['CX']?.onDestroyed).toHaveBeenCalledTimes(1)
-        expect(downlinks['D']?.onDestroyed).toHaveBeenCalledTimes(0)
+        expect(downlinks['AX']?.disconnect).toHaveBeenCalledTimes(1)
+        expect(downlinks['B']?.disconnect).toHaveBeenCalledTimes(0)
+        expect(downlinks['CX']?.disconnect).toHaveBeenCalledTimes(1)
+        expect(downlinks['D']?.disconnect).toHaveBeenCalledTimes(0)
 
         // test if the rest are ok
         uplinks['B']?.dispatch(plainTestMessageTo('D2'))

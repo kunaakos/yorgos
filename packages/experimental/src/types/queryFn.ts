@@ -4,7 +4,6 @@ import { TypeAndPayloadOf } from 'src/types/util'
 
 export type QueryOptions = {
     timeout: number
-    isPublic: boolean
 }
 
 export type QueryFnParams<

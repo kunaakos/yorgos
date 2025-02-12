@@ -1,24 +1,23 @@
 import { ActorId, ActorSystemId, Nullable } from 'src/types/base'
 import {
-    ActorConnection,
     ConnectActorFn,
     DisconnectActorFn,
     Messaging,
 } from 'src/types/messaging'
-import { CreateLinkFn, Downlink, Uplink } from 'src/types/remoting'
-import { DispatchFn } from 'src/types/system'
+import { Downlink, LinkFn, Uplink } from 'src/types/remoting'
+import { Actor, DispatchFn } from 'src/types/system'
 
 export const initMessaging = ({
     systemId,
 }: {
     systemId: ActorSystemId
 }): Messaging => {
-    const locals: Record<ActorId, ActorConnection> = {}
+    const locals: Record<ActorId, Actor> = {}
     let uplink: Nullable<Uplink> = null
 
     const dispatch: DispatchFn = (message) => {
         if (locals[message.meta.to]) {
-            locals[message.meta.to]?.actor.dispatch(message)
+            locals[message.meta.to]?.dispatch(message)
         } else if (uplink) {
             uplink.dispatch(message)
         } else {
@@ -26,23 +25,21 @@ export const initMessaging = ({
         }
     }
 
-    const connectActor: ConnectActorFn = (actorConnection) => {
-        locals[actorConnection.actor.id] = actorConnection
-        if (uplink && actorConnection.isPublic) {
-            uplink.publish([actorConnection.actor.id])
-        }
+    const connectActor: ConnectActorFn = (actor) => {
+        locals[actor.id] = actor
+        uplink && uplink.publish([actor.id])
     }
 
     const disconnectActor: DisconnectActorFn = ({ id }) => {
         if (locals[id]) {
-            uplink && locals[id].isPublic && uplink.unpublish([id])
+            uplink && uplink.unpublish([id])
             delete locals[id]
         } else {
             throw new Error('Could not disconnect: ActorId not found')
         }
     }
 
-    const connectRemotes = (createLink: CreateLinkFn) => {
+    const connectRemotes = (createLink: LinkFn) => {
         if (uplink) {
             throw new Error(
                 'Cannot connect to system: remotes already connected.',
@@ -51,14 +48,12 @@ export const initMessaging = ({
             const downlink: Downlink = {
                 systemId,
                 dispatch,
-                onDestroyed: () => {
+                disconnect: () => {
                     uplink = null
                 },
             }
             uplink = createLink(downlink)
-            const publicIds = Object.values(locals)
-                .filter((actorConnection) => actorConnection.isPublic)
-                .map((actorConnection) => actorConnection.actor.id)
+            const publicIds = Object.values(locals).map((actor) => actor.id)
             uplink?.publish(publicIds)
         }
     }
@@ -67,7 +62,7 @@ export const initMessaging = ({
         if (!uplink) {
             throw new Error('Cannot disconnect from system: not connected.')
         } else {
-            uplink.destroy()
+            uplink.disconnect()
             uplink = null
         }
     }
