@@ -44,6 +44,7 @@ export const initRouter = (): Router => {
     const publish = (system: System, actorIds: ActorId[]) => {
         if (actorIds.some((id) => actorLocations.has(id))) {
             unlink(system)
+            console.warn('ActorID collision, unlinking remote.')
         } else {
             system.actors = system.actors.union(new Set(actorIds))
             actorIds.forEach((id) => {
