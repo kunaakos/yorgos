@@ -1,7 +1,7 @@
 {
     "name": "@yorgos/experimental",
-    "version": "1.0.1",
-    "description": "TS actor system",
+    "version": "2.0.0",
+    "description": "TypeScript actor framework",
     "type": "module",
     "main": "dist/esm/index.js",
     "files": [
