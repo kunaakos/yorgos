@@ -1,16 +1,16 @@
 # **yorgos** is a bit weird.
 
-It is **an experiment** in writing an actor framework in TypeScript that allows one to create apps that are distributed across: processes, tabs, iframes, workers, embedded devices, serverless functions - in any combination.
+This is an experiment in writing an actor framework written in TypeScript that allows one to create apps that are distributed across networks of devices that can run JS. It aims to be a loose and simple implementation of the concept.
 
-It aims to be modular, simple enough so nodes can be implemented in other languages and to use the least amount of dependencies possible (currently: none).
+In short: **it runs in browsers, too** *and* it does **transparent remoting**.
 
 ## Overview
 
 Actors communicate via **messages that can be serialized as JSON**, and address each other by ID only. IDs are plain strings that you can pass along in messages.
 
-Multiple actor systems can be linked together to form a single network. Transports are not implemented as part of the framework, but remoting and templates for implementing your own transports are. This allows you to choose your own protocols and deal with security as you wish (see code examples). 
+Multiple actor systems can be linked together to form a single network. Transport implementations are not part of the framework, but remoting and templates for implementing your own transports are. This allows you to choose your own protocols and deal with security as you wish (see code examples). 
 
-**Actor hierarchy is flat** (*parent-child relations and system map will be added* for cases that require a strict hierarchy), which makes it easier for actors to roam across diffent systems in your network.
+**Actor hierarchy is flat** (parent-child relations and system map will be added in the future for cases that require a strict hierarchy), which makes it easier for actors to roam across diffent systems in your network.
 
 The framework is *very verbose and explicit* and encourages you to be so in your own code. It tries to be as strict as possible, but it's all JS at the end of the day, and TypeScript coverage is meant to help you write and refactor code, not validate your data. That being said, *validation will be added as an optional feature*.
 
@@ -37,11 +37,11 @@ If/when a stable version arises, it'll be published as (a) different package(s),
 
 ## Code examples (and guide)
 
-This guide
+This guide:
 - was written for `2.0.0`
-- assumes you're using node.js and TypeScript with a strict config and good support for them in your IDE
+- assumes you're using node.js and TypeScript with a strict config and good support for it in your IDE
 - requires you to deal with (the very simple) app structure yourself
-- skips first-party imports in code snippets, but **expect to find all types exported from the published package**
+- skips first-party imports in code snippets, but **expect to find everything exported from the published package**
 
 <details>
 
@@ -67,10 +67,10 @@ This guide
 Let's start with an actor that stores log entries, by first defining the messages it can accept:
 
 ```TypeScript
-type LogMessage = PlainMessage<'LOG', { entry: string }>
-type RequestLogEntriesMessage = QueryMessage<'REQUEST_LOG_ENTRIES', null>
+type NewLogEntryMessage = PlainMessage<'NEW_LOG_ENTRY', { entry: string }>
+type RequestLogsMessage = QueryMessage<'REQUEST_LOG_ENTRIES', null>
 
-type LoggerExpectedMessages = LogMessage | RequestLogsMessage
+type LoggerExpectedMessages = NewLogEntryMessage | RequestLogsMessage
 ```
 
 And the outgoing message it'll respond to the `REQUEST_LOG_ENTRIES` queries with:
@@ -120,8 +120,8 @@ The actor function - like a lot else in this framework - is just a type definiti
 By starting with declaring the type of our function as `ActorFn<LoggerState, LoggerExpectedMessages>`, we assure that everything in the fucntion body is checked by TypeScript. Try typing this instead of copy-pasting.
 
 ```TypeScript
-export const loggerActorFn: ActorFn<LoggerState, LoggerExpectedMessages> = ({ msg, state, dispatch }) => {
-     switch (msg.type) {
+const loggerActorFn: ActorFn<LoggerState, LoggerExpectedMessages> = ({ msg, state, dispatch }) => {
+    switch (msg.type) {
         case 'NEW_LOG_ENTRY':
             return { entries: [...state.entries, msg.payload.entry] }
         case 'REQUEST_LOG_ENTRIES':
@@ -148,12 +148,12 @@ export const loggerActorFn: ActorFn<LoggerState, LoggerExpectedMessages> = ({ ms
 </details>
 
 #### Actor Systems
-Cool cool, now let's get an actor system up and running.
+Cool cool, now let's get an actor system up and running. Spoiler alert: we'll be doing some remoting, so let's calle this "The Core System", because that's very sci-fi.
 
 ```TypeScript
-const system = initSystem({})
+coreSystem = initSystem({})
 
-system.spawn({
+coreSystem.spawn({
     id: 'LOGGER',
     fn: loggerActorFn,
     initialState: { entries: [] },
@@ -162,21 +162,14 @@ system.spawn({
 
 We gave this actor a hard-coded, human-readable `ActorId` - which is a necessary evil sometimes - but you should pass a `uniqueId()` instead in most cases.
 
-You now have a working system that you can message and query, but before we do that, let's write a *message template*. There's no builtin for this, and you don't have to do it, but it's a good pattern.
+You now have a working system that you can message and query, but before we do that, let's write a *message template* (a simple function that returns a message). There's no builtin for this, and you don't have to do it, but it's a good pattern.
 
 ```TypeScript
-export const newLogEntryMessage = ({
-    entry,
-    to
-}: {
-    entry: string,
-    to: ActorId
-}): NewLogEntryMessage => ({
+const newLogEntryMessage = ({ entry, to }: { entry: string; to: ActorId }): NewLogEntryMessage => ({
     type: 'NEW_LOG_ENTRY',
     payload: { entry },
-    meta: plainMeta({ to })
+    meta: plainMeta({ to }),
 })
-
 ```
 
 Let's add some new entries using the template...
@@ -186,13 +179,13 @@ Let's add some new entries using the template...
     'This is my first log.',
     'I often think about butterflies.',
     'I try to think less about insects, and where they all went to.',
-].forEach(entry => system.dispatch(newLogEntryMessage({ to: 'LOGGER', entry })))
+].forEach((entry) => coreSystem.dispatch(newLogEntryMessage({ entry, to: 'LOGGER' })))
 ```
 
 ...and query the actor to fetch our entries:
 
 ```TypeScript
-const { payload: { entries } } = await system.query<RequestLogEntriesMessage, LogEntriesMessage>({
+const { payload: { entries } } = await coreSystem.query<RequestLogEntriesMessage, LogEntriesMessage>({
     id: 'LOGGER',
     payload: null,
     type: 'REQUEST_LOG_ENTRIES',
@@ -200,11 +193,13 @@ const { payload: { entries } } = await system.query<RequestLogEntriesMessage, Lo
 console.log(entries)
 ```
 
-It's recommended that you wrap queries as reusable functions, let's take the above, and wrap it for later use:
+It's good practice to wrap queries as reusable functions. Let's take the above, and wrap it for later use:
 
 ```TypeScript
 const getLogEntriesVia = async (system: ActorSystem) => {
-    const { payload: { entries } } = await system.query<RequestLogsMessage, LogEntriesMessage>({
+    const {
+        payload: { entries },
+    } = await system.query<RequestLogsMessage, LogEntriesMessage>({
         id: 'LOGGER',
         payload: null,
         type: 'REQUEST_LOG_ENTRIES',
@@ -216,7 +211,7 @@ const getLogEntriesVia = async (system: ActorSystem) => {
 With the above, querying becomes as easy as:
 
 ```TypeScript
-console.log(await getLogEntriesVia(system))
+console.log(await getLogEntriesVia(coreSystem))
 ```
 
 <details>
@@ -236,15 +231,15 @@ Building a transport is quite advanced, but it allows you to cleanly integrate w
 
 Examples will be added as I develop and test more but **transport implementations will not be added to the main package**.
 
-The examples use the well-known `ws` library, and implement a simple protocol to identify nodes and publish `ActorId`s. You **need to publish addresses of `Actor`s, otherwise they're only accessible locally**.
+The examples use `ws` and implement a simple protocol to identify nodes and publish `ActorId`s. These are node.js examples, but either can be easily modified to work in the browser or other runtimes.
 
 <details>
 
 <summary>The theory - which suggest you revisit after finishing the guide.</summary>
 
-Up goes down, down goes up, this bit is addmittedly a bit messy and confusing, and likely to change. The goal here is to eventually chain functions that form transports, which will allow flexibility with authentication, fine grained message filtering/logging and features like delay tolerant messaging. This will likely be reimplemented in a manner similar to how express deals with middleware, for instance - but two-way communication makes that a bit tricky.
+Up goes down, down goes up, this bit is addmittedly a bit messy and confusing, and likely to change. The goal is to have a stack of middleware (for validation, buffering messages, filtering, authentication etc.) that form transports both on client and server side - but two-way communication makes that a bit tricky.
 
-Instead of using `EventEmitter`s or some other event-based or pubsub implementation, two sets of callbacks (`Uplink` and `Downlink`) are exchanged between components to link them together into **streams** (not *node streams*) that have an `ActorSystem` at the bottom and a `Router` at the top. Like so:
+Two sets of callbacks (`Uplink` and `Downlink`) are exchanged between components to link them together into **streams** (not *node streams*) that have an `ActorSystem` at the bottom and a `Router` at the top. Like so:
 
 ```
    ┌────► Uplink ──────┐
@@ -264,7 +259,7 @@ downstream ◄──────────────────────
 
 A function is used to exchange callbacks between components.
 
-This `CreateLinkFn` is  **created by the upstream component** (`Router` or `TransportClient`) and **called by the downstream component** (System, TransportServer) components. The downstream component passes a `Downlink` to this function, and the return value is an `Uplink`.
+This `LinkFn` is  **created by the upstream component** (`Router` or `TransportClient`) and **called by the downstream component** (`System`, `TransportHost`) components. The downstream component passes a `Downlink` to this function, and the return value is an `Uplink`.
 
 Downstream component responsibilites:
 - publish `ActorId`s that join and leave the public network from that node
@@ -282,15 +277,14 @@ Upstream component responsibilities:
 
 <summary>Some simple utilities.</summary>
 
-These will be shared by both client and host.
+These will be shared by both client and host, and will be used to validate the simple commands used in this makeshift protocol.
 
 ```TypeScript
 const isString = (val: any): val is string => typeof val === 'string'
 
 const validateCommand = (message: any[]): [string, string[]] => {
     const [command, ...ids] = message
-    if (!isString(command) || !ids.length || !ids.every(isString))
-        throw new Error('WS: malformed WS command.')
+    if (!isString(command) || !ids.length || !ids.every(isString)) throw new Error('WS: malformed WS command.')
     return [command, ids]
 }
 ```
@@ -301,88 +295,84 @@ const validateCommand = (message: any[]): [string, string[]] => {
 
 <summary>The host</summary>
 
+The hosts is will be connected to the router, and accepts incoming commands and messages from multiple remote systems, and creates a separate router link for each.
+
 ```TypeScript
 import WebSocket, { WebSocketServer } from 'ws'
 
-const initWebSocketHost: InitTransportHostFn<{ port: number }> = async ({createLink, port }) => {
+const onSocketConnection = (link: LinkFn) => (socket: WebSocket) => {
+    console.info(`WS: new connection.`)
+
+    let uplink: Uplink | null = null
+    let remoteSystemId: ActorSystemId | null = null
+
+    const onCommand = (message: string[]) => {
+        const [command, ids] = validateCommand(message)
+        if (uplink && command === 'JOIN') {
+            uplink.publish(ids)
+            return
+        } else if (uplink && command === 'LEAVE') {
+            uplink.unpublish(ids)
+            return
+        } else if (!uplink && command === 'SYSTEMID') {
+            remoteSystemId = ids[0] as string
+            const downlink: Downlink = {
+                systemId: remoteSystemId,
+                dispatch: (message: Message) => socket.send(JSON.stringify(message)),
+                disconnect: onDisconnected,
+            }
+            uplink = link(downlink)
+            console.info(`WS: ${remoteSystemId} identified.`)
+            return
+        } else {
+            throw new Error('WS: unexpected command received.')
+        }
+    }
+
+    const onMessage = (message: Message) => {
+        if (!uplink) throw new Error('WS: received message from unidentified system.')
+        uplink.dispatch(message)
+    }
+
+    const onWsMessage = (data: WebSocket.RawData) => {
+        try {
+            const message = JSON.parse(data.toString())
+            if (Array.isArray(message)) {
+                onCommand(message)
+            } else {
+                onMessage(message)
+            }
+        } catch (error) {
+            console.error(error)
+            disconnect()
+        }
+    }
+
+    const disconnect = () => {
+        uplink && uplink.disconnect()
+    }
+
+    const onDisconnected = () => {
+        socket.close()
+    }
+
+    socket.on('message', onWsMessage)
+}
+
+const initWebSocketHost: InitTransportHostFn<{ port: number }> = async ({ link, port }) => {
     const server = new WebSocketServer({ port })
     console.info('WS: server running.')
 
-    server.on('connection', (socket) => {
-        console.info(`WS: new connection.`)
+    server.on('connection', onSocketConnection(link))
 
-        let uplink: Uplink | null = null
-        let remoteSystemId: ActorSystemId | null = null
-
-        const cleanup = () => {
-            uplink = null
-            socket.close()
-        }
-
-        const messageHandler = (data: WebSocket.RawData) => {
-            try {
-                // all messages are JSON, and can be...
-                const message = JSON.parse(data.toString())
-                
-                if (Array.isArray(message)) {
-                    // ..."commands", in the form of arrays...
-                    const [command, ids] = validateCommand(message)
-                    
-                    switch (command) {
-                        case 'SYSTEMID':
-                            remoteSystemId = ids[0] as string
-                            const downlink: Downlink = {
-                                systemId: remoteSystemId,
-                                dispatch: (message: Message) => socket.send(JSON.stringify(message)),
-                                onDestroyed: cleanup
-                            }
-                            uplink = createLink(downlink)
-                            console.info(`WS: ${remoteSystemId} identified.`)
-                            return
-
-                        case 'JOIN':
-                            if (!uplink) throw new Error('WS: received command from unidentified system.')
-                            ids.forEach(uplink.publish)
-                            return
-
-                        case 'LEAVE':
-                            if (!uplink) throw new Error('WS: received command from unidentified system.')
-                            ids.forEach(uplink.unpublish)
-                            return
-
-                        default:
-                            throw new Error(`WS: unrecognized WS command "${command}".`)
-                    }
-                } else {
-                    // ...or messages in form of Objects.
-                    if (!uplink) throw new Error('WS: received message from unidentified system.') 
-                    uplink.dispatch(message)
-                }
-            } catch (error) {
-                socket.off('message', messageHandler) // stop processing messages immediately
-                console.error(error)
-                console.warn(`WS: Closing connection from ${remoteSystemId ? remoteSystemId : 'unidentified system'}.`)
-                socket.close()
-            }
-        }
-
-        socket.on('message', messageHandler)
-
-        socket.on('error', (error) => {
-            uplink && uplink.destroy()
-            console.error(error)
-        })
-
-        socket.on('close', () => {
-            uplink && uplink.destroy()
-            console.info(`WS: Connection from ${remoteSystemId ? remoteSystemId : 'unidentified system'} closed.`)
-        })
+    server.on('close', () => {
+        console.info('WS: server stopped.')
     })
 
-    server.on('close', () => { console.info('WS: server stopped.')})
-
     return {
-        stop: async () => { server.close() }
+        stop: async () => {
+            server.close()
+        },
     }
 }
 ```
@@ -396,54 +386,56 @@ const initWebSocketHost: InitTransportHostFn<{ port: number }> = async ({createL
 ```TypeScript
 import WebSocket from 'ws'
 
-export const initWebSocketClient: InitTransportClientFn<{ address: string | URL }> = async ({ address }) => {
+const initWebSocketClient: InitTransportClientFn<{
+    address: string | URL
+}> = async ({ address }) => {
     const socket = new WebSocket(address)
 
-    socket.on('error', (error) => { throw error })
-
-    await new Promise<void>((resolve) => {
-        socket.on('open', () => {
+    await new Promise<void>((resolve, reject) => {
+        socket.once('open', () => {
             resolve()
+        })
+        socket.once('error', (error) => {
+            reject(error)
         })
     })
 
-    const createLink: CreateLinkFn = (downlink) => {
-        socket.on('close', () => {
-            console.info(`WS transport: connection closed.`)
-            downlink.onDestroyed()
-        })
-
+    const link: LinkFn = (downlink) => {
         socket.on('message', (data) => {
             const message = JSON.parse(data.toString())
-            if (Array.isArray(message)) {
-                const [command, ] = validateCommand(message)
-                switch (command) {
-                    default:
-                        throw new Error(`WS: unrecognized WS command "${command}".`)
-                }
-            } else {
-                downlink.dispatch(message)
-            }
+            downlink.dispatch(message)
         })
 
+        const onDisconnected = () => {
+            console.info(`WS transport: connection closed.`)
+            downlink.disconnect()
+        }
+
+        const disconnect = () => {
+            socket.once('close', () => {
+                downlink.disconnect()
+            })
+        }
+
+        const uplink: Uplink = {
+            dispatch: (message: Message) => socket.send(JSON.stringify(message)),
+            publish: (actorIds: ActorId[]) => socket.send(JSON.stringify(['JOIN', ...actorIds])),
+            unpublish: (actorIds: ActorId[]) => socket.send(JSON.stringify(['LEAVE', ...actorIds])),
+            disconnect,
+        }
+
+        socket.on('error', onDisconnected)
+        socket.once('close', onDisconnected)
         socket.send(JSON.stringify(['SYSTEMID', downlink.systemId]))
 
-        return {
-            dispatch: (message: Message) =>
-                socket.send(JSON.stringify(message)),
-            publish: (actorId: ActorId) =>
-                socket.send(JSON.stringify(['JOIN', actorId])),
-            unpublish: (actorId: ActorId) =>
-                socket.send(JSON.stringify(['LEAVE', actorId])),
-            destroy: () => {
-                socket.close()
-            },
-        }
+        return uplink
     }
 
     return {
-        createLink,
-        stop: async () => { socket.close() }
+        link,
+        stop: async () => {
+            socket.close()
+        },
     }
 }
 ```
@@ -455,21 +447,21 @@ Take the `system` (and the rest of the code from the previous examples), and con
 
 ```TypeScript
 const router = initRouter()
-system.connectRemotes(router.createLink)
+coreSystem.connectRemotes(router.link)
 ```
 
 Now connect the same router to a WebSocket host implemented in the previous section:
 
 ```TypeScript
-initWebSocketHost(router.createLink)
+initWebSocketHost({ link: router.link, port: 3000 })
 ```
 
 Create another system in a separate application:
 
 ```TypeScript
 const clientSystem = initSystem({})
-const createLink = await initWebSocketClient()
-clientSystem.connectRemotes(createLink)
+const webSocketClient = await initWebSocketClient({ address: 'ws://localhost:3000' })
+clientSystem.connectRemotes(webSocketClient.link)
 ```
 
 You can now message and query **any actor with a published `ActorId`** residing in any of the systems attached to this network.
@@ -477,8 +469,8 @@ You can now message and query **any actor with a published `ActorId`** residing 
 ```TypeScript
 clientSystem.dispatch(
     newLogEntryMessage({
-        to: 'LOGGER',
         entry: 'Birds seem to have followed the insects wherever they went.'
+        to: 'LOGGER',
     })
 )
 ```
@@ -491,7 +483,9 @@ console.log(await getLogEntriesVia(clientSystem))
 
 Any number of clients can connect to this host, it'll create links for new connections automatically. You can even attach multiple instances of a `TransportHost` to the same router.
 
-You can implement `TransportHost`s for different protocols/libraries/hardware - anything as long as you can get JSON from A to B - and use several of them in the same system. 
+You can implement `TransportHost`s for different protocols/libraries/hardware - anything as long as you can get JSON from A to B - and use several types of them in the same system.
+
+With a bit of glue code, you can spawn independent actors and link them to systems, link two systems directly without a router, write transport middleware - all undocumented for now, but proper tooling for such feature should be added in the future.
 
 This is the end, I hope you had fun, and see the possibilites such an approach offers!
 
