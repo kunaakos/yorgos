@@ -43,7 +43,7 @@ export const initRouter = (): Router => {
 
     const publish = (system: System, actorIds: ActorId[]) => {
         if (actorIds.some((id) => actorLocations.has(id))) {
-            disconnect(system)
+            unlink(system)
         } else {
             system.actors = system.actors.union(new Set(actorIds))
             actorIds.forEach((id) => {
@@ -66,7 +66,7 @@ export const initRouter = (): Router => {
         systems.delete(system.downLink.systemId)
     }
 
-    const disconnect = (system: System) => {
+    const unlink = (system: System) => {
         system.killUplink()
         remove(system)
         system.downLink.disconnect()
@@ -77,7 +77,7 @@ export const initRouter = (): Router => {
         remove(system)
     }
 
-    const connect: LinkFn = (downlink) => {
+    const link: LinkFn = (downlink) => {
         if (systems.has(downlink.systemId)) {
             downlink.disconnect()
             return null
@@ -111,6 +111,6 @@ export const initRouter = (): Router => {
     }
 
     return {
-        link: connect,
+        link,
     }
 }
