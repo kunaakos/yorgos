@@ -1,5 +1,5 @@
-import { initMailbox } from './mailbox'
-import { plainTestMessageTo } from './util.test/messageTemplates'
+import { initMailbox } from 'src/mailbox'
+import { plainTestMessageTo } from 'src/util.test/messageTemplates'
 
 describe('mailbox', () => {
     test('should store a deep clone of received messages', () => {

@@ -39,5 +39,5 @@ export { initSystem } from 'src/system'
 export { initRouter } from 'src/router'
 
 export { plainMeta, queryMeta, responseMetaTo } from 'src/util/metaTemplates'
-export { uniqueId } from './util/uniqueId'
-export { forwardedCopyOf } from './util/message'
+export { uniqueId } from 'src/util/uniqueId'
+export { forwardedCopyOf } from 'src/util/message'

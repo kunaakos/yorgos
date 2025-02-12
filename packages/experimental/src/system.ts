@@ -1,11 +1,11 @@
+import { ActorSystemId } from 'src/types/base'
 import { ActorSystem } from 'src/types/system'
+
+import { uniqueId } from 'src/util/uniqueId'
 
 import { initMessaging } from 'src/messaging'
 import { initQuery } from 'src/query'
 import { spawn } from 'src/spawn'
-
-import { ActorSystemId } from './types/base'
-import { uniqueId } from './util/uniqueId'
 
 export const initSystem = ({ id }: { id?: ActorSystemId }): ActorSystem => {
     const systemId = id || uniqueId()
