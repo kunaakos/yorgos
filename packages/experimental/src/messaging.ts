@@ -6,6 +6,7 @@ import {
 } from 'src/types/messaging'
 import { Downlink, LinkFn, Uplink } from 'src/types/remoting'
 import { Actor, DispatchFn } from 'src/types/system'
+import { eventually } from './util/eventually'
 
 export const initMessaging = ({
     systemId,
@@ -19,7 +20,7 @@ export const initMessaging = ({
         if (locals[message.meta.to]) {
             locals[message.meta.to]?.dispatch(message)
         } else if (uplink) {
-            uplink.dispatch(message)
+            eventually(() => uplink && uplink.dispatch(message))
         } else {
             // TODO: handle messages without recipients
         }
