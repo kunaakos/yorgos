@@ -306,6 +306,8 @@ const onSocketConnection = (link: LinkFn) => (socket: WebSocket) => {
     let uplink: Uplink | null = null
     let remoteSystemId: ActorSystemId | null = null
 
+    const systemIdentifier = () => `${remoteSystemId ? remoteSystemId : 'unidentified system'}`
+
     const onCommand = (message: string[]) => {
         const [command, ids] = validateCommand(message)
         if (uplink && command === 'JOIN') {
@@ -350,16 +352,20 @@ const onSocketConnection = (link: LinkFn) => (socket: WebSocket) => {
 
     const disconnect = () => {
         uplink && uplink.disconnect()
+        console.info(`WS: socket connection to ${systemIdentifier()} closed.`)
     }
 
     const onDisconnected = () => {
+        console.info(`WS: ${systemIdentifier()} disconnected by router.`)
+        socket.off('close', disconnect)
         socket.close()
     }
 
+    socket.on('close', disconnect)
     socket.on('message', onWsMessage)
 }
 
-const initWebSocketHost: InitTransportHostFn<{ port: number }> = async ({ link, port }) => {
+export const initWebSocketHost: InitTransportHostFn<{ port: number }> = async ({ link, port }) => {
     const server = new WebSocketServer({ port })
     console.info('WS: server running.')
 
