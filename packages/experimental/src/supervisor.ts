@@ -18,26 +18,8 @@ export const initSupervisor = ({
     mailbox: Mailbox
 }): Supervisor => {
     const processing = condition(false)
-
-    /**
-     * Processing messages should not block the flow of the function that
-     * called the `DispatchFn` triggering message processing.
-     */
-    const processMessages = eventually(
-        processing.toggleAndDoIf(false, () => {
-            processLoop()
-                .then(() => {
-                    processing.set(false)
-                })
-                .catch((error: any) => {
-                    processing.set(false)
-                    console.error(error)
-                })
-        }),
-    )
-
     const processLoop = async () => {
-        while (processing.is(true) && mailbox.hasMessages()) {
+        if (processing.is(true) && mailbox.hasMessages()) {
             try {
                 const msg = mailbox.getOldest()
                 const newState = await fn({
@@ -54,9 +36,25 @@ export const initSupervisor = ({
                 console.error(error)
             } finally {
                 mailbox.deleteOldest()
+                eventually(processLoop)()
             }
+        } else {
+            processing.set(false)
         }
     }
+
+    /**
+     * NOTE:
+     * Processing messages should not block the flow of the function that
+     * called the `DispatchFn` triggering message processing,
+     * an actor with a stuffed mailbox should allow others to process
+     * their own mail.
+     * To allow for this to happen, `processLoop` is a bit of a tangle
+     * but will do for now, messaging and supervision should change anyways,
+     * so there's no point in fixating on this too soon.
+     */
+    const processMessages = //
+        processing.toggleAndDoIf(false, eventually(processLoop))
 
     return {
         processMessages,
