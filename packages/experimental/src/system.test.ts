@@ -55,7 +55,9 @@ describe('actor system', () => {
         const TEST_ACTOR_ID = 'TEST_ACTOR'
         const TEST_SYSTEM_ID = 'TEST_SYSTEM'
 
-        const actorFn: ActorFn<null, TestMessageWithPayload> = ({ msg }) => {
+        const actorFn: ActorFn<null, null, TestMessageWithPayload> = ({
+            msg,
+        }) => {
             messageLog.push(JSON.stringify(msg))
             return null
         }
@@ -65,6 +67,7 @@ describe('actor system', () => {
             id: TEST_ACTOR_ID,
             fn: actorFn,
             initialState: null,
+            context: null,
         })
 
         system.dispatch({
@@ -95,10 +98,11 @@ describe('actor system', () => {
         const TEST_ACTOR_ID = 'TEST_ACTOR'
         const TEST_SYSTEM_ID = 'TEST_SYSTEM'
 
-        const actorFn: ActorFn<null, TestQueryMessageWithPayload> = async ({
-            msg,
-            dispatch,
-        }) => {
+        const actorFn: ActorFn<
+            null,
+            null,
+            TestQueryMessageWithPayload
+        > = async ({ msg, dispatch }) => {
             if (msg.type === 'TEST_QUERY_WITH_PAYLOAD') {
                 messageLog.push(JSON.stringify(msg))
                 const testResponseMessage: TestResponseMessageWithPayload = {
@@ -118,6 +122,7 @@ describe('actor system', () => {
         system.spawn({
             id: TEST_ACTOR_ID,
             fn: actorFn,
+            context: null,
             initialState: null,
         })
 
@@ -154,10 +159,11 @@ describe('actor system', () => {
         const TEST_ACTOR_ID = 'TEST_ACTOR'
         const TEST_SYSTEM_ID = 'TEST_SYSTEM'
 
-        const actorFn: ActorFn<null, TestQueryMessageWithPayload> = async ({
-            msg,
-            dispatch,
-        }) => {
+        const actorFn: ActorFn<
+            null,
+            null,
+            TestQueryMessageWithPayload
+        > = async ({ msg, dispatch }) => {
             if (msg.type === 'TEST_QUERY_WITH_PAYLOAD') {
                 messageLog.push(JSON.stringify(msg))
                 await delay(10)
@@ -179,6 +185,7 @@ describe('actor system', () => {
             id: TEST_ACTOR_ID,
             fn: actorFn,
             initialState: null,
+            context: null,
         })
 
         expect(
@@ -215,20 +222,21 @@ describe('actor system', () => {
 
         const TEST_SYSTEM_ID = 'TEST_SYSTEM'
 
-        const actorFn: ActorFn<null, TestMessage> = () => {
+        const actorFn: ActorFn<null, null, TestMessage> = () => {
             eventLog.push('A')
             return null
         }
 
-        const asyncActorFn: ActorFn<null, TestMessage> = async () => {
+        const asyncActorFn: ActorFn<null, null, TestMessage> = async () => {
             eventLog.push('B')
             return null
         }
 
-        const slowActorFn: ActorFn<null, TestQueryMessageWithPayload> = async ({
-            msg,
-            dispatch,
-        }) => {
+        const slowActorFn: ActorFn<
+            null,
+            null,
+            TestQueryMessageWithPayload
+        > = async ({ msg, dispatch }) => {
             await delay(5)
             eventLog.push('C')
             const testResponseMessage: TestResponseMessage = {
@@ -245,16 +253,19 @@ describe('actor system', () => {
             id: '1',
             fn: actorFn,
             initialState: null,
+            context: null,
         })
         system.spawn({
             id: '2',
             fn: asyncActorFn,
             initialState: null,
+            context: null,
         })
         system.spawn({
             id: '3',
             fn: slowActorFn,
             initialState: null,
+            context: null,
         })
 
         for (let i = 0; i <= 8; i++) {
@@ -297,6 +308,7 @@ describe('actor system', () => {
 
         const actorFn: ActorFn<
             null,
+            null,
             TestQueryMessageWithPayload | TestMessage
         > = async ({ msg, dispatch }) => {
             if (msg.type === 'TEST_MESSAGE') {
@@ -331,6 +343,7 @@ describe('actor system', () => {
             id: TEST_ACTOR_ID,
             fn: actorFn,
             initialState: null,
+            context: null,
         })
 
         const testMessage: TestMessage = {

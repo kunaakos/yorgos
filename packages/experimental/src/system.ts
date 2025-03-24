@@ -24,11 +24,17 @@ export const initSystem = ({ id }: { id?: ActorSystemId }): ActorSystem => {
      * I'm yet to figure out how to solve this elegantly while keeping
      * the ability to message actors directly.
      */
-    const systemSpawnFn: ActorSystem['spawn'] = ({ id, fn, initialState }) => {
+    const systemSpawnFn: ActorSystem['spawn'] = ({
+        id,
+        fn,
+        initialState,
+        context,
+    }) => {
         const actor = spawn({
             id,
             fn,
             initialState,
+            context,
             dispatch: messaging.dispatch,
         })
         messaging.connectActor(actor)

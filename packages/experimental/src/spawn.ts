@@ -12,13 +12,14 @@ import { initSupervisor } from 'src/supervisor'
  * Try not to cling to things (keep references), which will
  * stop actors from being garbage collected when their time is due.
  */
-export const spawn: SpawnFn = ({ id, fn, dispatch, initialState }) => {
+export const spawn: SpawnFn = ({ id, fn, dispatch, initialState, context }) => {
     const mailbox = initMailbox()
     const state = initStateHandler({ initialState })
     const supervisor = initSupervisor({
         fn,
         dispatch,
         state,
+        context,
         mailbox,
     })
 

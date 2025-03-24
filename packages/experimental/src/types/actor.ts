@@ -1,7 +1,7 @@
-import { ActorId, Nullable } from 'src/types/base'
+import { ActorId, Nullable, Serializable } from 'src/types/base'
 import { Message } from 'src/types/message'
 import { Actor, DispatchFn } from 'src/types/system'
-import { AsyncOrSync } from 'src/types/util'
+import { AnyRecord, AsyncOrSync } from 'src/types/util'
 
 /**
  * Actors are stateful by default, think of them as functions
@@ -20,9 +20,14 @@ export type ActorStateHandler<StateType> = {
  * It's passed the previous state and the parent system's `DispatchFn`
  * and must return the new state (or null, if there was no change).
  */
-export type ActorFn<StateType, MessageType extends Message = Message> = (
+export type ActorFn<
+    StateType extends Nullable<Serializable>,
+    ContextType extends Nullable<AnyRecord>,
+    MessageType extends Message = Message,
+> = (
     params: {
         state: StateType
+        context: ContextType
         msg: MessageType
         dispatch: DispatchFn
     }, //
@@ -33,22 +38,38 @@ export type ActorFn<StateType, MessageType extends Message = Message> = (
  * Anything goes as long as they receive a `DispatchFn`.
  * This is useful for testing and for distributed actor systems.
  */
-export type SpawnFnParams<StateType> = {
+export type SpawnFnParams<
+    StateType extends Nullable<Serializable>,
+    ContextType extends Nullable<AnyRecord>,
+> = {
     id: ActorId
-    fn: ActorFn<StateType, any>
+    fn: ActorFn<StateType, ContextType, any>
     dispatch: DispatchFn
     initialState: StateType
+    context: ContextType
 }
-export type SpawnFn = <StateType>(params: SpawnFnParams<StateType>) => Actor
+export type SpawnFn = <
+    StateType extends Nullable<Serializable>,
+    ContextType extends Nullable<AnyRecord>,
+>(
+    params: SpawnFnParams<StateType, ContextType>,
+) => Actor
 
 /**
  * ... but usually actors are spawned by an `ActorSystem`,
  * which provides its own `DispatchFn`.
  */
-export type SystemSpawnFnParams<StateType> = Pick<
-    SpawnFnParams<StateType>,
-    'id' | 'fn' | 'initialState'
+export type SystemSpawnFnParams<
+    StateType extends Nullable<Serializable>,
+    ContextType extends Nullable<AnyRecord>,
+> = Pick<
+    SpawnFnParams<StateType, ContextType>,
+    'id' | 'fn' | 'initialState' | 'context'
 >
-export type SystemSpawnFn = <StateType>(
-    args: SystemSpawnFnParams<StateType>,
+
+export type SystemSpawnFn = <
+    StateType extends Nullable<Serializable>,
+    ContextType extends Nullable<AnyRecord>,
+>(
+    args: SystemSpawnFnParams<StateType, ContextType>,
 ) => Actor

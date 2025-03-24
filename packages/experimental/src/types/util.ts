@@ -5,3 +5,5 @@ export type TypeAndPayloadOf<
 > = Pick<MessageType, 'type' | 'payload'>
 
 export type AsyncOrSync<ReturnType> = ReturnType | Promise<ReturnType>
+
+export type AnyRecord = Record<string | symbol, any>

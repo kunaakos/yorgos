@@ -1,7 +1,9 @@
 import { ActorFn, ActorStateHandler } from 'src/types/actor'
+import { Nullable } from 'src/types/base'
 import { Mailbox } from 'src/types/mailbox'
 import { Supervisor } from 'src/types/supervisor'
 import { DispatchFn } from 'src/types/system'
+import { AnyRecord } from 'src/types/util'
 
 import { condition } from 'src/util/condition'
 import { eventually } from 'src/util/eventually'
@@ -10,11 +12,13 @@ export const initSupervisor = ({
     fn,
     dispatch,
     state,
+    context,
     mailbox,
 }: {
     fn: ActorFn<any, any>
     dispatch: DispatchFn
     state: ActorStateHandler<any>
+    context: Nullable<AnyRecord>
     mailbox: Mailbox
 }): Supervisor => {
     const processing = condition(false)
@@ -24,6 +28,7 @@ export const initSupervisor = ({
                 const msg = mailbox.getOldest()
                 const newState = await fn({
                     state: state.get(),
+                    context,
                     msg,
                     dispatch,
                 })

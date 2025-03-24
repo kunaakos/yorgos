@@ -41,7 +41,9 @@ export const initQuery =
             /**
              * The actor function handles unexpected responses, but does not time out by itself.
              */
-            const queryActorFn: ActorFn<null> = ({ msg: responseMsg }) => {
+            const queryActorFn: ActorFn<null, null> = ({
+                msg: responseMsg,
+            }) => {
                 if (
                     responseMsg.meta.cat === 'R' &&
                     responseMsg.meta.irt === queryId
@@ -66,6 +68,7 @@ export const initQuery =
                     dispatch: () => {},
                     fn: queryActorFn,
                     initialState: null,
+                    context: null,
                 }),
             )
 
