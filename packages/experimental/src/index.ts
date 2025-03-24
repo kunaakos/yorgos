@@ -24,6 +24,8 @@ export type {
     ResponseMessageMeta,
 } from 'src/types/messageMeta'
 
+export type { MessageHandlers } from 'src/types/messageHandlers'
+
 export type {
     Downlink,
     Uplink,
@@ -35,9 +37,17 @@ export type {
     InitTransportClientFn,
 } from 'src/types/remoting'
 
+export type {
+    InferAcceptedMessageTypes,
+    InferStateType,
+    InferContextType,
+} from 'src/types/util'
+
 export { initSystem } from 'src/system'
 export { initRouter } from 'src/router'
 
 export { plainMeta, queryMeta, responseMetaTo } from 'src/util/metaTemplates'
 export { uniqueId } from 'src/util/uniqueId'
 export { forwardedCopyOf } from 'src/util/message'
+
+export { usingHandlers } from 'src/messageHandlers'
