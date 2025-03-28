@@ -62,7 +62,7 @@ export const initMessaging = ({
             }
             uplink = createLink(downlink)
             const publicIds = Object.values(locals).map((actor) => actor.id)
-            uplink?.publish(publicIds)
+            publicIds.length && uplink?.publish(publicIds)
         }
     }
 
