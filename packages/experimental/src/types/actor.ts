@@ -3,6 +3,8 @@ import { Message } from 'src/types/message'
 import { Actor, DispatchFn } from 'src/types/system'
 import { AnyRecord, AsyncOrSync } from 'src/types/util'
 
+import { SnapshotOptions } from './persistence'
+
 /**
  * Actors are stateful by default, think of them as functions
  * that reduce messages to a state object.
@@ -45,6 +47,9 @@ export type SpawnFnParams<
     id: ActorId
     fn: ActorFn<StateType, ContextType, any>
     dispatch: DispatchFn
+    snapshots?: StateType extends Serializable
+        ? SnapshotOptions<StateType>
+        : never
     initialState: StateType
     context: ContextType
 }
@@ -59,17 +64,17 @@ export type SpawnFn = <
  * ... but usually actors are spawned by an `ActorSystem`,
  * which provides its own `DispatchFn`.
  */
-export type SystemSpawnFnParams<
+export type SpawnRootActorParams<
     StateType extends Nullable<Serializable>,
     ContextType extends Nullable<AnyRecord>,
 > = Pick<
     SpawnFnParams<StateType, ContextType>,
-    'id' | 'fn' | 'initialState' | 'context'
+    'id' | 'fn' | 'snapshots' | 'initialState' | 'context'
 >
 
-export type SystemSpawnFn = <
+export type SpawnRootActor = <
     StateType extends Nullable<Serializable>,
     ContextType extends Nullable<AnyRecord>,
 >(
-    args: SystemSpawnFnParams<StateType, ContextType>,
+    args: SpawnRootActorParams<StateType, ContextType>,
 ) => Actor
