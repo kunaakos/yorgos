@@ -5,44 +5,67 @@ import { uniqueId } from 'src/util/uniqueId'
 
 import { initMessaging } from 'src/messaging'
 import { initQuery } from 'src/query'
-import { spawn } from 'src/spawn'
+import { spawnStatefulActor, spawnStatelessActor } from 'src/spawn'
 
-export const initSystem = ({ id }: { id?: ActorSystemId }): ActorSystem => {
+import { PersistentStateProvider } from './types/persistence'
+import { stubStateValidator } from './stateHandler'
+
+export const initSystem = ({
+    id,
+    persistenceProvider,
+}: {
+    id?: ActorSystemId
+    persistenceProvider?: PersistentStateProvider
+}): ActorSystem => {
     const systemId = id || uniqueId()
     const messaging = initMessaging({ systemId })
 
     const query = initQuery({ messaging })
 
-    /**
-     * The only difference between independently spawned and "system" actors is
-     * that system actors come pre-connected to a message hub,
-     * which holds a reference to them so they're not garbage collected.
-     *
-     * NOTE: a reference to the `DispatchFn` function returned by the `SpawnFn`
-     * will keep the actor from being garbage collected.
-     * This also keeps the system together.
-     * I'm yet to figure out how to solve this elegantly while keeping
-     * the ability to message actors directly.
-     */
-    const systemSpawnFn: ActorSystem['spawn'] = ({
+    const spawnStateful: ActorSystem['spawnStateful'] = async ({
         id,
         fn,
         initialState,
+        persistState = false,
+        isValidState = stubStateValidator,
         context,
     }) => {
-        const actor = spawn({
+        if (!persistenceProvider)
+            throw new Error(
+                'Attempted to spawn an actor with persistent state without a persistence provider.',
+            )
+        const actor = await spawnStatefulActor({
             id,
             fn,
             initialState,
             context,
+            ...(persistState
+                ? { persistentState: persistenceProvider({ id, isValidState }) }
+                : {}),
             dispatch: messaging.dispatch,
         })
         messaging.connectActor(actor)
-        return actor // <- this is where the trouble lies
+        return actor
+    }
+
+    const spawnStateless: ActorSystem['spawnStateless'] = ({
+        id,
+        fn,
+        context,
+    }) => {
+        const actor = spawnStatelessActor({
+            id,
+            fn,
+            context,
+            dispatch: messaging.dispatch,
+        })
+        messaging.connectActor(actor)
+        return actor
     }
 
     return {
-        spawn: systemSpawnFn,
+        spawnStateful,
+        spawnStateless,
         query,
         dispatch: messaging.dispatch,
         connectRemotes: messaging.connectRemotes,

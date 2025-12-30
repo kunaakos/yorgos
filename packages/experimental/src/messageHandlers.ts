@@ -7,7 +7,7 @@ import { AnyRecord } from 'src/types/util'
 export const usingHandlers =
     <
         State extends Nullable<Serializable>,
-        Context extends Nullable<AnyRecord>,
+        Context extends AnyRecord,
         AcceptedMessages extends Message = Message,
     >(
         handlers: MessageHandlers<ActorFn<State, Context, AcceptedMessages>>,

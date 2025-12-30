@@ -23,4 +23,4 @@ const cloneDeep = <T>(obj: T): T => {
     }
 }
 
-export const cloneMessage = <T extends Serializable>(o: T): T => cloneDeep(o)
+export const clone = <T extends Serializable>(o: T): T => cloneDeep(o)

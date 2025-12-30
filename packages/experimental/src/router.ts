@@ -21,7 +21,7 @@ import { createKillswitch } from 'src/util/killswitch'
  * they should be managed carefuly, and that shouldn't be
  * the responsibility of the system.
  */
-
+// TODO: MOVE TO TYPES!
 type System = {
     downLink: Downlink
     actors: Set<ActorId>

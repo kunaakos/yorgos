@@ -1,6 +1,7 @@
-import { ActorFn, ActorStateHandler } from 'src/types/actor'
+import { ActorFn } from 'src/types/actor'
 import { Nullable } from 'src/types/base'
 import { Mailbox } from 'src/types/mailbox'
+import { StateHandler } from 'src/types/stateHandler.type'
 import { Supervisor } from 'src/types/supervisor'
 import { DispatchFn } from 'src/types/system'
 import { AnyRecord } from 'src/types/util'
@@ -17,7 +18,7 @@ export const initSupervisor = ({
 }: {
     fn: ActorFn<any, any>
     dispatch: DispatchFn
-    state: ActorStateHandler<any>
+    state: StateHandler<any>
     context: Nullable<AnyRecord>
     mailbox: Mailbox
 }): Supervisor => {
@@ -32,7 +33,7 @@ export const initSupervisor = ({
                     msg,
                     dispatch,
                 })
-                newState && state.set(newState)
+                newState && (await state.set(newState))
             } catch (error) {
                 /**
                  * Messages that cause errors are dropped, there are no other

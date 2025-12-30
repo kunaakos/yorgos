@@ -6,7 +6,7 @@ import { QueryFn, QueryOptions } from 'src/types/queryFn'
 import { queryMeta } from 'src/util/metaTemplates'
 import { uniqueId } from 'src/util/uniqueId'
 
-import { spawn } from 'src/spawn'
+import { spawnStatelessActor } from 'src/spawn'
 
 const DEFAULT_QUERY_OPTIONS: QueryOptions = {
     timeout: 500,
@@ -41,9 +41,7 @@ export const initQuery =
             /**
              * The actor function handles unexpected responses, but does not time out by itself.
              */
-            const queryActorFn: ActorFn<null, null> = ({
-                msg: responseMsg,
-            }) => {
+            const queryActorFn: ActorFn<null, {}> = ({ msg: responseMsg }) => {
                 if (
                     responseMsg.meta.cat === 'R' &&
                     responseMsg.meta.irt === queryId
@@ -63,12 +61,11 @@ export const initQuery =
             }
 
             messaging.connectActor(
-                spawn({
+                spawnStatelessActor({
                     id: queryActorId,
                     dispatch: () => {},
+                    context: {},
                     fn: queryActorFn,
-                    initialState: null,
-                    context: null,
                 }),
             )
 

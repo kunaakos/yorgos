@@ -1,24 +1,58 @@
-import { SpawnFn } from 'src/types/actor'
+import { SpawnStatefulActorFn, SpawnStatelessActorFn } from 'src/types/actor'
 import { Message } from 'src/types/message'
 
 import { initMailbox } from 'src/mailbox'
-import { initStateHandler } from 'src/stateHandler'
+import {
+    initInMemoryStateHandler,
+    initPersistentStateHandler,
+    nullStateHandler,
+} from 'src/stateHandler'
 import { initSupervisor } from 'src/supervisor'
 
-/**
- * The most important thing about `Actor`s is that they're just closures.
- * There is no actor object, just reference(s) to the actor's function(s).
- * Actor functionality is composed of these functions.
- * Try not to cling to things (keep references), which will
- * stop actors from being garbage collected when their time is due.
- */
-export const spawn: SpawnFn = ({ id, fn, dispatch, persistence, initialState, context }) => {
+export const spawnStatefulActor: SpawnStatefulActorFn = async ({
+    id,
+    fn,
+    dispatch,
+    persistentState,
+    initialState,
+    context,
+}) => {
     const mailbox = initMailbox()
-    const state = initStateHandler({ initialState })
+    const state = persistentState
+        ? await initPersistentStateHandler({
+              initialState,
+              persistentState,
+          })
+        : initInMemoryStateHandler({
+              initialState,
+          })
     const supervisor = initSupervisor({
         fn,
         dispatch,
         state,
+        context,
+        mailbox,
+    })
+
+    const actorDispatch = (message: Message) => {
+        mailbox.deliver(message)
+        supervisor.processMessages()
+    }
+
+    return { id, dispatch: actorDispatch }
+}
+
+export const spawnStatelessActor: SpawnStatelessActorFn = ({
+    id,
+    fn,
+    dispatch,
+    context,
+}) => {
+    const mailbox = initMailbox()
+    const supervisor = initSupervisor({
+        fn,
+        dispatch,
+        state: nullStateHandler,
         context,
         mailbox,
     })

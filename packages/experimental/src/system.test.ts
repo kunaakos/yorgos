@@ -55,7 +55,7 @@ describe('actor system', () => {
         const TEST_ACTOR_ID = 'TEST_ACTOR'
         const TEST_SYSTEM_ID = 'TEST_SYSTEM'
 
-        const actorFn: ActorFn<null, null, TestMessageWithPayload> = ({
+        const actorFn: ActorFn<null, {}, TestMessageWithPayload> = ({
             msg,
         }) => {
             messageLog.push(JSON.stringify(msg))
@@ -63,11 +63,10 @@ describe('actor system', () => {
         }
 
         const system = initSystem({ id: TEST_SYSTEM_ID })
-        const actor = system.spawn({
+        const actor = system.spawnStateless({
             id: TEST_ACTOR_ID,
             fn: actorFn,
-            initialState: null,
-            context: null,
+            context: {},
         })
 
         system.dispatch({
@@ -98,11 +97,10 @@ describe('actor system', () => {
         const TEST_ACTOR_ID = 'TEST_ACTOR'
         const TEST_SYSTEM_ID = 'TEST_SYSTEM'
 
-        const actorFn: ActorFn<
-            null,
-            null,
-            TestQueryMessageWithPayload
-        > = async ({ msg, dispatch }) => {
+        const actorFn: ActorFn<null, {}, TestQueryMessageWithPayload> = async ({
+            msg,
+            dispatch,
+        }) => {
             if (msg.type === 'TEST_QUERY_WITH_PAYLOAD') {
                 messageLog.push(JSON.stringify(msg))
                 const testResponseMessage: TestResponseMessageWithPayload = {
@@ -119,11 +117,10 @@ describe('actor system', () => {
         }
 
         const system = initSystem({ id: TEST_SYSTEM_ID })
-        system.spawn({
+        system.spawnStateless({
             id: TEST_ACTOR_ID,
             fn: actorFn,
-            context: null,
-            initialState: null,
+            context: {},
         })
 
         const { type: responseType, payload: responsepayload } =
@@ -159,11 +156,10 @@ describe('actor system', () => {
         const TEST_ACTOR_ID = 'TEST_ACTOR'
         const TEST_SYSTEM_ID = 'TEST_SYSTEM'
 
-        const actorFn: ActorFn<
-            null,
-            null,
-            TestQueryMessageWithPayload
-        > = async ({ msg, dispatch }) => {
+        const actorFn: ActorFn<null, {}, TestQueryMessageWithPayload> = async ({
+            msg,
+            dispatch,
+        }) => {
             if (msg.type === 'TEST_QUERY_WITH_PAYLOAD') {
                 messageLog.push(JSON.stringify(msg))
                 await delay(10)
@@ -181,11 +177,10 @@ describe('actor system', () => {
         }
 
         const system = initSystem({ id: TEST_SYSTEM_ID })
-        system.spawn({
+        system.spawnStateless({
             id: TEST_ACTOR_ID,
             fn: actorFn,
-            initialState: null,
-            context: null,
+            context: {},
         })
 
         expect(
@@ -222,19 +217,19 @@ describe('actor system', () => {
 
         const TEST_SYSTEM_ID = 'TEST_SYSTEM'
 
-        const actorFn: ActorFn<null, null, TestMessage> = () => {
+        const actorFn: ActorFn<null, {}, TestMessage> = () => {
             eventLog.push('A')
             return null
         }
 
-        const asyncActorFn: ActorFn<null, null, TestMessage> = async () => {
+        const asyncActorFn: ActorFn<null, {}, TestMessage> = async () => {
             eventLog.push('B')
             return null
         }
 
         const slowActorFn: ActorFn<
             null,
-            null,
+            {},
             TestQueryMessageWithPayload
         > = async ({ msg, dispatch }) => {
             await delay(5)
@@ -249,23 +244,20 @@ describe('actor system', () => {
         }
 
         const system = initSystem({ id: TEST_SYSTEM_ID })
-        system.spawn({
+        system.spawnStateless({
             id: '1',
             fn: actorFn,
-            initialState: null,
-            context: null,
+            context: {},
         })
-        system.spawn({
+        system.spawnStateless({
             id: '2',
             fn: asyncActorFn,
-            initialState: null,
-            context: null,
+            context: {},
         })
-        system.spawn({
+        system.spawnStateless({
             id: '3',
             fn: slowActorFn,
-            initialState: null,
-            context: null,
+            context: {},
         })
 
         for (let i = 0; i <= 8; i++) {
@@ -308,7 +300,7 @@ describe('actor system', () => {
 
         const actorFn: ActorFn<
             null,
-            null,
+            {},
             TestQueryMessageWithPayload | TestMessage
         > = async ({ msg, dispatch }) => {
             if (msg.type === 'TEST_MESSAGE') {
@@ -339,11 +331,10 @@ describe('actor system', () => {
         }
 
         const system = initSystem({ id: TEST_SYSTEM_ID })
-        system.spawn({
+        system.spawnStateless({
             id: TEST_ACTOR_ID,
             fn: actorFn,
-            initialState: null,
-            context: null,
+            context: {},
         })
 
         const testMessage: TestMessage = {

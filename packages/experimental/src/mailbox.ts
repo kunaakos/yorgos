@@ -6,7 +6,7 @@ import { Message } from 'src/types/message'
  * so nothing gets mutated accidentally.
  * If this ever becomes a perf issue, cloning can be made optional.
  */
-import { cloneMessage } from 'src/util/cloneMessage'
+import { clone } from 'src/util/clone'
 
 export const initMailbox = (): Mailbox => {
     const storedMessages: Message[] = []
@@ -15,13 +15,13 @@ export const initMailbox = (): Mailbox => {
     const isEmpty = () => !Boolean(storedMessages.length)
 
     const deliver = (message: Message) => {
-        storedMessages.push(cloneMessage(message))
+        storedMessages.push(clone(message))
     }
 
     const getOldest = (): Message => {
         if (!storedMessages.length || !storedMessages[0])
             throw new Error('No message in mailbox.')
-        return cloneMessage(storedMessages[0])
+        return clone(storedMessages[0])
     }
 
     const deleteOldest = () => {

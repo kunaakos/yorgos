@@ -1,4 +1,7 @@
-import { SpawnRootActor } from 'src/types/actor'
+import {
+    SystemSpawnStatefulFn,
+    SystemSpawnStatelessActorFn,
+} from 'src/types/actor'
 import { ActorId } from 'src/types/base'
 import { Message } from 'src/types/message'
 import { ConnectRemotesFn, DisconnectRemotesFn } from 'src/types/messaging'
@@ -29,7 +32,8 @@ export type Actor = {
  * - provides a `SystemSpawnFn` that spawns actors that reside in it
  */
 export type ActorSystem = {
-    spawn: SpawnRootActor
+    spawnStateless: SystemSpawnStatelessActorFn
+    spawnStateful: SystemSpawnStatefulFn
     query: QueryFn
     dispatch: DispatchFn
     connectRemotes: ConnectRemotesFn

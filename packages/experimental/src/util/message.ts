@@ -1,7 +1,7 @@
 import { ActorId } from 'src/types/base'
 import { Message } from 'src/types/message'
 
-import { cloneMessage } from 'src/util/cloneMessage'
+import { clone } from 'src/util/clone'
 import { uniqueId } from 'src/util/uniqueId'
 
 export const forwardedCopyOf = <MessageType extends Message>({
@@ -11,11 +11,11 @@ export const forwardedCopyOf = <MessageType extends Message>({
     message: MessageType
     to: ActorId
 }): MessageType => {
-    const clone = cloneMessage(message)
+    const messageClone = clone(message)
     return {
-        ...clone,
+        ...messageClone,
         meta: {
-            ...clone.meta,
+            ...messageClone.meta,
             id: uniqueId(),
             to,
         },

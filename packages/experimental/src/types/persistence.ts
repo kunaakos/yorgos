@@ -1,11 +1,16 @@
-import { ActorId, Nullable, Serializable } from 'src/types/base'
+import { ActorId, Serializable } from 'src/types/base'
+import { StateValidatorFn } from 'src/types/stateHandler.type'
 
-export type SnapshotOptions<StateType extends Serializable> = {
-    every: number
-    storage: SnapshotStorage<StateType>
-}
+export type PersistentStateProvider = <StateType extends Serializable>({
+    id,
+    isValidState
+}: {
+    id: ActorId
+    isValidState: StateValidatorFn<StateType>
+}) => PersistentState<StateType>
 
-export type SnapshotStorage<StateStype extends Serializable> = {
-    store: (id: ActorId, state: StateStype) => Promise<void>
-    retrieve: (id: ActorId) => Promise<Nullable<StateStype>>
+
+export type PersistentState<StateType> = {
+    store: (newState: StateType) => Promise<void>
+    retrieve: () => Promise<StateType>
 }
