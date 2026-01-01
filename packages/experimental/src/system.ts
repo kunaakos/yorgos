@@ -1,5 +1,5 @@
 import { ActorSystemId } from 'src/types/base'
-import { Actor, ActorSystem } from 'src/types/system'
+import { ActorSystem } from 'src/types/system'
 
 import { uniqueId } from 'src/util/uniqueId'
 import { withEffect } from 'src/util/withEffect'
@@ -11,43 +11,53 @@ import { spawnStateful, spawnStateless } from 'src/spawn'
 import { makeInMemoryStateHandler } from 'src/stateHandler'
 import { makeSupervisor } from 'src/supervisor'
 
-export const initSystem = ({ id }: { id?: ActorSystemId }): ActorSystem => {
+import { partial } from './util/partial'
+
+export const initSystem = ({
+    id,
+    // makePersistentStateHandler,
+}: {
+    id?: ActorSystemId
+    // makePersistentStateHandler?: MakeStateHandler
+}): ActorSystem => {
     const systemId = id || uniqueId()
     const messaging = initMessaging({ systemId })
 
     const query = initQuery({ messaging })
 
-    const connectToMessaging = (actor: Actor) => messaging.connectActor(actor)
-
     const systemSpawnStateless: ActorSystem['spawnStateless'] = withEffect(
-        connectToMessaging,
-        (args) => {
-            return spawnStateless({
-                makeMailbox,
-                makeSupervisor,
-                systemDispatch: messaging.dispatch,
-                ...args,
-            })
-        },
+        messaging.connectActor,
+        partial(spawnStateless, {
+            makeMailbox,
+            makeSupervisor,
+            systemDispatch: messaging.dispatch,
+        }),
     )
 
     const systemSpawnStateful: ActorSystem['spawnStateful'] = withEffect(
-        connectToMessaging,
-        (args) => {
-            return spawnStateful({
-                makeMailbox,
-                makeSupervisor,
-                makeStateHandler: makeInMemoryStateHandler,
-                systemDispatch: messaging.dispatch,
-                ...args,
-            })
-        },
+        messaging.connectActor,
+        partial(spawnStateful, {
+            makeMailbox,
+            makeSupervisor,
+            makeStateHandler: makeInMemoryStateHandler,
+            systemDispatch: messaging.dispatch,
+        }),
     )
+
+    // const systemSpawnPersistent: ActorSystem['spawnPersistent'] = withEffect(
+    //     messaging.connectActor,
+    //     partial(spawnStateful, {
+    //         makeMailbox,
+    //         makeSupervisor,
+    //         makeStateHandler: makePersistentStateHandler,
+    //         systemDispatch: messaging.dispatch,
+    //     }),
+    // )
 
     return {
         spawnStateful: systemSpawnStateful,
         spawnStateless: systemSpawnStateless,
-        // spawnPersistent,
+        // spawnPersistent: systemSpawnPersistent,
         query,
         dispatch: messaging.dispatch,
         connectRemotes: messaging.connectRemotes,
