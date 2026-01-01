@@ -1,34 +1,28 @@
-import { SpawnStatefulActorFn, SpawnStatelessActorFn } from 'src/types/actor'
 import { Message } from 'src/types/message'
+import { StatefulSpawnFn, StatelessSpawnFn } from 'src/types/spawn'
 
-import { initMailbox } from 'src/mailbox'
-import {
-    initInMemoryStateHandler,
-    initPersistentStateHandler,
-    nullStateHandler,
-} from 'src/stateHandler'
-import { initSupervisor } from 'src/supervisor'
-
-export const spawnStatefulActor: SpawnStatefulActorFn = async ({
+export const spawnStateful: StatefulSpawnFn = ({
+    systemDispatch,
+    makeStateHandler,
+    makeMailbox,
+    makeSupervisor,
     id,
     fn,
-    dispatch,
-    persistentState,
     initialState,
+    isValidState,
     context,
 }) => {
-    const mailbox = initMailbox()
-    const state = persistentState
-        ? await initPersistentStateHandler({
-              initialState,
-              persistentState,
-          })
-        : initInMemoryStateHandler({
-              initialState,
-          })
-    const supervisor = initSupervisor({
+    const mailbox = makeMailbox()
+
+    const state = makeStateHandler({
+        id,
+        initialState,
+        isValidState,
+    })
+
+    const supervisor = makeSupervisor({
         fn,
-        dispatch,
+        dispatch: systemDispatch,
         state,
         context,
         mailbox,
@@ -42,17 +36,20 @@ export const spawnStatefulActor: SpawnStatefulActorFn = async ({
     return { id, dispatch: actorDispatch }
 }
 
-export const spawnStatelessActor: SpawnStatelessActorFn = ({
+export const spawnStateless: StatelessSpawnFn = ({
+    systemDispatch,
+    makeMailbox,
+    makeSupervisor,
     id,
     fn,
-    dispatch,
     context,
 }) => {
-    const mailbox = initMailbox()
-    const supervisor = initSupervisor({
+    const mailbox = makeMailbox()
+
+    const supervisor = makeSupervisor({
         fn,
-        dispatch,
-        state: nullStateHandler,
+        dispatch: systemDispatch,
+        state: null,
         context,
         mailbox,
     })

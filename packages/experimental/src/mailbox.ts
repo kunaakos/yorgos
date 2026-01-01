@@ -8,7 +8,7 @@ import { Message } from 'src/types/message'
  */
 import { clone } from 'src/util/clone'
 
-export const initMailbox = (): Mailbox => {
+export const makeMailbox = (): Mailbox => {
     const storedMessages: Message[] = []
 
     const hasMessages = () => Boolean(storedMessages.length)

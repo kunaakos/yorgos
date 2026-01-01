@@ -1,12 +1,10 @@
-import { ActorFn } from 'src/types/actor'
 import { ActorId, MessageId } from 'src/types/base'
+import { Message } from 'src/types/message'
 import { Messaging } from 'src/types/messaging'
 import { QueryFn, QueryOptions } from 'src/types/queryFn'
 
 import { queryMeta } from 'src/util/metaTemplates'
 import { uniqueId } from 'src/util/uniqueId'
-
-import { spawnStatelessActor } from 'src/spawn'
 
 const DEFAULT_QUERY_OPTIONS: QueryOptions = {
     timeout: 500,
@@ -21,17 +19,16 @@ export const initQuery =
         }
 
         /**
-         * A single-use actor with a unique ID is spawned for dispatching every query message.
+         * A single-use mock actor with a unique ID is spawned to accept responses to queries.
          * The creation and destruction of this actor is enclosed in this promise executor.
-         * This promise either resolves with a received message's payload and type, or rejects with an (internal) error.
          **/
         return new Promise((resolve, reject) => {
             const queryId: MessageId = uniqueId()
             const queryActorId: ActorId = uniqueId()
+
             /**
-             * To handle timeouts, one must simply dispose of the query actor and reject the pending `queryPromise`.
-             * Any subsequent responses will be discarded (as of the current implementation),
-             * but this will not halt any ongoing process in the queried actor.
+             * To handle timeouts, one must dispose of the query actor and reject the pending `queryPromise`.
+             * It's up to `Messaging` to handle any responses coming in after the cutoff.
              */
             const timeoutId = setTimeout(() => {
                 messaging.disconnectActor({ id: queryActorId })
@@ -39,35 +36,28 @@ export const initQuery =
             }, options.timeout)
 
             /**
-             * The actor function handles unexpected responses, but does not time out by itself.
+             * Instead of a full-blown actor with a supervisor, a mock actor is created.
+             * This is immediately executed and throws on unexpected responses.
              */
-            const queryActorFn: ActorFn<null, {}> = ({ msg: responseMsg }) => {
-                if (
-                    responseMsg.meta.cat === 'R' &&
-                    responseMsg.meta.irt === queryId
-                ) {
+            messaging.connectActor({
+                id: queryActorId,
+                dispatch: (responseMsg: Message) => {
                     clearTimeout(timeoutId)
                     messaging.disconnectActor({ id: queryActorId })
-                    resolve({
-                        type: responseMsg.type,
-                        payload: responseMsg.payload,
-                    })
-                } else {
-                    clearTimeout(timeoutId)
-                    messaging.disconnectActor({ id: queryActorId })
-                    reject(new Error('Unexpected query response received.'))
-                }
-                return null
-            }
-
-            messaging.connectActor(
-                spawnStatelessActor({
-                    id: queryActorId,
-                    dispatch: () => {},
-                    context: {},
-                    fn: queryActorFn,
-                }),
-            )
+                    if (
+                        responseMsg.meta &&
+                        responseMsg.meta.cat === 'R' &&
+                        responseMsg.meta.irt === queryId
+                    ) {
+                        resolve({
+                            type: responseMsg.type,
+                            payload: responseMsg.payload,
+                        })
+                    } else {
+                        reject(new Error('Malformed query response received.'))
+                    }
+                },
+            })
 
             messaging.dispatch({
                 type,

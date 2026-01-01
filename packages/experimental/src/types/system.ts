@@ -1,11 +1,11 @@
-import {
-    SystemSpawnStatefulFn,
-    SystemSpawnStatelessActorFn,
-} from 'src/types/actor'
+import 'src/types/actor'
 import { ActorId } from 'src/types/base'
 import { Message } from 'src/types/message'
 import { ConnectRemotesFn, DisconnectRemotesFn } from 'src/types/messaging'
 import { QueryFn } from 'src/types/queryFn'
+
+import { StatefulSpawnFn, StatelessSpawnFn } from './spawn'
+import { PickNamedArgsOf } from './util'
 
 /**
  * Outgoing messages are dispatched using a `DispatchFn`.
@@ -24,16 +24,21 @@ export type Actor = {
 }
 
 /**
- * Actors live in the actor system, which:
+ * Actors live in an actor system, which:
  * - holds references to actors
- * - has a `MessageHub` that handles the distribution of messages
+ * - has a `Messaging` that handles the distribution of messages
  * - provides the `QueryFn` and a `DispatchFn` which allow entities
  *   outside of the system to interact with actors
- * - provides a `SystemSpawnFn` that spawns actors that reside in it
+ * - provides a `spawn*` functions that spawn actors connected to it
+ * This system is merely a template, custom systems can be composed.
  */
 export type ActorSystem = {
-    spawnStateless: SystemSpawnStatelessActorFn
-    spawnStateful: SystemSpawnStatefulFn
+    spawnStateless: PickNamedArgsOf<StatelessSpawnFn, 'id' | 'fn' | 'context'>
+    spawnStateful: PickNamedArgsOf<
+        StatefulSpawnFn,
+        'id' | 'fn' | 'context' | 'initialState' | 'isValidState'
+    >
+    // spawnPersistent: PickNamedArgsOf<StatefulSpawnFn, 'id' | 'fn' | 'context' | 'initialState' | 'isValidState'>
     query: QueryFn
     dispatch: DispatchFn
     connectRemotes: ConnectRemotesFn

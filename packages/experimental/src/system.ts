@@ -1,71 +1,53 @@
 import { ActorSystemId } from 'src/types/base'
-import { ActorSystem } from 'src/types/system'
+import { Actor, ActorSystem } from 'src/types/system'
 
 import { uniqueId } from 'src/util/uniqueId'
+import { withEffect } from 'src/util/withEffect'
 
+import { makeMailbox } from 'src/mailbox'
 import { initMessaging } from 'src/messaging'
 import { initQuery } from 'src/query'
-import { spawnStatefulActor, spawnStatelessActor } from 'src/spawn'
+import { spawnStateful, spawnStateless } from 'src/spawn'
+import { makeInMemoryStateHandler } from 'src/stateHandler'
+import { makeSupervisor } from 'src/supervisor'
 
-import { PersistentStateProvider } from './types/persistence'
-import { stubStateValidator } from './stateHandler'
-
-export const initSystem = ({
-    id,
-    persistenceProvider,
-}: {
-    id?: ActorSystemId
-    persistenceProvider?: PersistentStateProvider
-}): ActorSystem => {
+export const initSystem = ({ id }: { id?: ActorSystemId }): ActorSystem => {
     const systemId = id || uniqueId()
     const messaging = initMessaging({ systemId })
 
     const query = initQuery({ messaging })
 
-    const spawnStateful: ActorSystem['spawnStateful'] = async ({
-        id,
-        fn,
-        initialState,
-        persistState = false,
-        isValidState = stubStateValidator,
-        context,
-    }) => {
-        if (!persistenceProvider)
-            throw new Error(
-                'Attempted to spawn an actor with persistent state without a persistence provider.',
-            )
-        const actor = await spawnStatefulActor({
-            id,
-            fn,
-            initialState,
-            context,
-            ...(persistState
-                ? { persistentState: persistenceProvider({ id, isValidState }) }
-                : {}),
-            dispatch: messaging.dispatch,
-        })
-        messaging.connectActor(actor)
-        return actor
-    }
+    const connectToMessaging = (actor: Actor) => messaging.connectActor(actor)
 
-    const spawnStateless: ActorSystem['spawnStateless'] = ({
-        id,
-        fn,
-        context,
-    }) => {
-        const actor = spawnStatelessActor({
-            id,
-            fn,
-            context,
-            dispatch: messaging.dispatch,
-        })
-        messaging.connectActor(actor)
-        return actor
-    }
+    const systemSpawnStateless: ActorSystem['spawnStateless'] = withEffect(
+        connectToMessaging,
+        (args) => {
+            return spawnStateless({
+                makeMailbox,
+                makeSupervisor,
+                systemDispatch: messaging.dispatch,
+                ...args,
+            })
+        },
+    )
+
+    const systemSpawnStateful: ActorSystem['spawnStateful'] = withEffect(
+        connectToMessaging,
+        (args) => {
+            return spawnStateful({
+                makeMailbox,
+                makeSupervisor,
+                makeStateHandler: makeInMemoryStateHandler,
+                systemDispatch: messaging.dispatch,
+                ...args,
+            })
+        },
+    )
 
     return {
-        spawnStateful,
-        spawnStateless,
+        spawnStateful: systemSpawnStateful,
+        spawnStateless: systemSpawnStateless,
+        // spawnPersistent,
         query,
         dispatch: messaging.dispatch,
         connectRemotes: messaging.connectRemotes,

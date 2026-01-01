@@ -1,9 +1,9 @@
-import { initMailbox } from 'src/mailbox'
+import { makeMailbox } from 'src/mailbox'
 import { plainTestMessageTo } from 'src/util.test/messageTemplates'
 
 describe('mailbox', () => {
     test('should store a deep clone of received messages', () => {
-        const mailbox = initMailbox()
+        const mailbox = makeMailbox()
         const mutableMessage = plainTestMessageTo('NOBODY')
 
         mailbox.deliver(mutableMessage)
@@ -14,7 +14,7 @@ describe('mailbox', () => {
     })
 
     test('should retreive a deep clone of stored messages', () => {
-        const mailbox = initMailbox()
+        const mailbox = makeMailbox()
 
         mailbox.deliver(plainTestMessageTo('NOBODY'))
 

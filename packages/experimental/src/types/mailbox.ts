@@ -7,3 +7,5 @@ export type Mailbox = {
     getOldest: () => Message
     deleteOldest: () => void
 }
+
+export type MakeMailbox = () => Mailbox

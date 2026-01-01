@@ -1,39 +1,27 @@
-import { ActorFn } from 'src/types/actor'
-import { Nullable } from 'src/types/base'
-import { Mailbox } from 'src/types/mailbox'
-import { StateHandler } from 'src/types/stateHandler.type'
-import { Supervisor } from 'src/types/supervisor'
-import { DispatchFn } from 'src/types/system'
-import { AnyRecord } from 'src/types/util'
+import { MakeSupervisorArgs, Supervisor } from 'src/types/supervisor'
 
 import { condition } from 'src/util/condition'
 import { eventually } from 'src/util/eventually'
 
-export const initSupervisor = ({
+export const makeSupervisor = ({
     fn,
     dispatch,
     state,
     context,
     mailbox,
-}: {
-    fn: ActorFn<any, any>
-    dispatch: DispatchFn
-    state: StateHandler<any>
-    context: Nullable<AnyRecord>
-    mailbox: Mailbox
-}): Supervisor => {
+}: MakeSupervisorArgs): Supervisor => {
     const processing = condition(false)
     const processLoop = async () => {
         if (processing.is(true) && mailbox.hasMessages()) {
             try {
                 const msg = mailbox.getOldest()
                 const newState = await fn({
-                    state: state.get(),
+                    state: state ? await state.get() : null,
                     context,
                     msg,
                     dispatch,
                 })
-                newState && (await state.set(newState))
+                newState && state && (await state.set(newState))
             } catch (error) {
                 /**
                  * Messages that cause errors are dropped, there are no other
