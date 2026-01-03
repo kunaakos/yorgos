@@ -10,7 +10,7 @@ const DEFAULT_QUERY_OPTIONS: QueryOptions = {
     timeout: 500,
 }
 
-export const initQuery =
+export const makeQuery =
     ({ messaging }: { messaging: Messaging }): QueryFn =>
     ({ id: to, type, payload, options: optionsProvided = {} }) => {
         const options: QueryOptions = {

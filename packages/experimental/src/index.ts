@@ -43,7 +43,18 @@ export type {
     InferContextType,
 } from 'src/types/util'
 
-export { initSystem } from 'src/system'
+export type {
+    SpawnStatefulFn,
+    MakeSpawnStatefulFn,
+    SpawnStatelessFn,
+    MakeSpawnStatelessFn,
+} from 'src/types/spawn'
+
+export { makeSpawnStateful, makeSpawnStateless } from 'src/spawn'
+export { makeInMemoryStateHandler, stubStateValidator } from 'src/stateHandler'
+export { makeMailbox } from 'src/mailbox'
+export { makeSupervisor } from 'src/supervisor'
+export { makeSystem } from 'src/system'
 export { initRouter } from 'src/router'
 
 export { plainMeta, queryMeta, responseMetaTo } from 'src/util/metaTemplates'

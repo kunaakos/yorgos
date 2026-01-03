@@ -4,7 +4,7 @@ import { PlainMessage, QueryMessage, ResponseMessage } from 'src/types/message'
 import { plainMeta, responseMetaTo } from 'src/util/metaTemplates'
 import { uniqueId } from 'src/util/uniqueId'
 
-import { initSystem } from 'src/system'
+import { makeSystem } from 'src/system'
 
 jest.mock('src/util/uniqueId')
 
@@ -62,7 +62,7 @@ describe('actor system', () => {
             return null
         }
 
-        const system = initSystem({ id: TEST_SYSTEM_ID })
+        const system = makeSystem({ id: TEST_SYSTEM_ID })
         const actor = system.spawnStateless({
             id: TEST_ACTOR_ID,
             fn: actorFn,
@@ -116,7 +116,7 @@ describe('actor system', () => {
             }
         }
 
-        const system = initSystem({ id: TEST_SYSTEM_ID })
+        const system = makeSystem({ id: TEST_SYSTEM_ID })
         system.spawnStateless({
             id: TEST_ACTOR_ID,
             fn: actorFn,
@@ -176,7 +176,7 @@ describe('actor system', () => {
             }
         }
 
-        const system = initSystem({ id: TEST_SYSTEM_ID })
+        const system = makeSystem({ id: TEST_SYSTEM_ID })
         system.spawnStateless({
             id: TEST_ACTOR_ID,
             fn: actorFn,
@@ -243,7 +243,7 @@ describe('actor system', () => {
             return null
         }
 
-        const system = initSystem({ id: TEST_SYSTEM_ID })
+        const system = makeSystem({ id: TEST_SYSTEM_ID })
         system.spawnStateless({
             id: '1',
             fn: actorFn,
@@ -330,7 +330,7 @@ describe('actor system', () => {
             }
         }
 
-        const system = initSystem({ id: TEST_SYSTEM_ID })
+        const system = makeSystem({ id: TEST_SYSTEM_ID })
         system.spawnStateless({
             id: TEST_ACTOR_ID,
             fn: actorFn,

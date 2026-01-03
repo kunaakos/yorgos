@@ -6,12 +6,12 @@ import { uniqueId } from 'src/util/uniqueId'
 
 import { makeMailbox } from 'src/mailbox'
 import { initMessaging } from 'src/messaging'
-import { initQuery } from 'src/query'
+import { makeQuery } from 'src/query'
 import { makeSpawnStateful, makeSpawnStateless } from 'src/spawn'
 import { makeInMemoryStateHandler } from 'src/stateHandler'
 import { makeSupervisor } from 'src/supervisor'
 
-export const initSystem = ({
+export const makeSystem = ({
     id,
     makePersistentStateHandler,
 }: {
@@ -20,8 +20,7 @@ export const initSystem = ({
 }): ActorSystem => {
     const systemId = id || uniqueId()
     const messaging = initMessaging({ systemId })
-
-    const query = initQuery({ messaging })
+    const query = makeQuery({ messaging })
 
     return {
         spawnStateful: makeSpawnStateful({
