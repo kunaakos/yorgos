@@ -6,12 +6,12 @@ import { AnyRecord } from 'src/types/util'
 
 export const usingHandlers =
     <
+        AcceptedMessages extends Message,
         State extends Nullable<Serializable>,
         Context extends AnyRecord,
-        AcceptedMessages extends Message = Message,
     >(
-        handlers: MessageHandlers<ActorFn<State, Context, AcceptedMessages>>,
-    ): ActorFn<State, Context, AcceptedMessages> =>
+        handlers: MessageHandlers<ActorFn<AcceptedMessages, State, Context>>,
+    ): ActorFn<AcceptedMessages, State, Context> =>
     (params) => {
         if (handlers.hasOwnProperty(params.msg.type)) {
             // @ts-expect-error

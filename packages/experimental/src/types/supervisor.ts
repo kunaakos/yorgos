@@ -10,7 +10,7 @@ export type Supervisor = {
 }
 
 export type MakeSupervisorArgs = {
-    fn: ActorFn<any, any>
+    fn: ActorFn<any, any, any>
     dispatch: DispatchFn
     state: Nullable<StateHandler<any>>
     context: AnyRecord

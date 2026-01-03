@@ -1,17 +1,17 @@
 import { ActorFn } from 'src/types/actor'
 import { Message } from 'src/types/message'
 import {
-    InferAcceptedMessageTypes,
+    InferAcceptedMessageType,
     InferContextType,
     InferStateType,
 } from 'src/types/util'
 
 export type MessageHandlers<Fn extends ActorFn<any, any, any>> = {
-    [MessageType in InferAcceptedMessageTypes<Fn>['type']]: ActorFn<
+    [MessageType in InferAcceptedMessageType<Fn>['type']]: ActorFn<
+        Extract<InferAcceptedMessageType<Fn>, { type: MessageType }>,
         InferStateType<Fn>,
-        InferContextType<Fn>,
-        Extract<InferAcceptedMessageTypes<Fn>, { type: MessageType }>
+        InferContextType<Fn>
     >
 } & {
-    other?: ActorFn<InferStateType<Fn>, InferContextType<Fn>, Message>
+    other?: ActorFn<Message, InferStateType<Fn>, InferContextType<Fn>>
 }

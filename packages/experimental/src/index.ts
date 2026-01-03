@@ -38,7 +38,7 @@ export type {
 } from 'src/types/remoting'
 
 export type {
-    InferAcceptedMessageTypes,
+    InferAcceptedMessageType,
     InferStateType,
     InferContextType,
 } from 'src/types/util'

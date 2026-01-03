@@ -15,7 +15,7 @@ export type SpawnStatefulFnArgs<
     context?: ContextType
     initialState: StateType
     isValidState?: StateValidatorFn<StateType>
-    fn: ActorFn<StateType, ContextType, any>
+    fn: ActorFn<any, StateType, ContextType>
 }
 
 export type SpawnStatefulFn = <
@@ -39,7 +39,7 @@ export type MakeSpawnStatefulFn = (
 export type SpawnStatelessFnArgs<ContextType extends AnyRecord> = {
     id: ActorId
     context?: ContextType
-    fn: ActorFn<null, ContextType, any>
+    fn: ActorFn<any, null, ContextType>
 }
 
 export type SpawnStatelessFn = <ContextType extends AnyRecord>(

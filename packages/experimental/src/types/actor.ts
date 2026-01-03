@@ -4,14 +4,14 @@ import { DispatchFn } from 'src/types/system'
 import { AnyRecord, AsyncOrSync } from 'src/types/util'
 
 export type ActorFn<
-    StateType extends Nullable<Serializable>,
-    ContextType extends AnyRecord,
-    MessageType extends Message = Message,
+    AcceptedMessageType extends Message = Message,
+    StateType extends Nullable<Serializable> = null,
+    ContextType extends AnyRecord = {},
 > = (
     params: {
         state: StateType
         context: ContextType
-        msg: MessageType
+        msg: AcceptedMessageType
         dispatch: DispatchFn
     }, //
 ) => AsyncOrSync<Nullable<StateType>>
