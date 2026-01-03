@@ -1,63 +1,62 @@
 import { Message } from 'src/types/message'
-import { StatefulSpawnFn, StatelessSpawnFn } from 'src/types/spawn'
+import { MakeSpawnStatefulFn, MakeSpawnStatelessFn } from 'src/types/spawn'
 
-export const spawnStateful: StatefulSpawnFn = ({
-    systemDispatch,
-    makeStateHandler,
-    makeMailbox,
-    makeSupervisor,
-    id,
-    fn,
-    initialState,
-    isValidState,
-    context,
-}) => {
-    const mailbox = makeMailbox()
+import { stubStateValidator } from 'src/stateHandler'
 
-    const state = makeStateHandler({
+export const makeSpawnStateful: MakeSpawnStatefulFn =
+    ({ messaging, makeStateHandler, makeMailbox, makeSupervisor }) =>
+    ({
         id,
+        fn,
         initialState,
-        isValidState,
-    })
+        isValidState = stubStateValidator,
+        context = {},
+    }) => {
+        const mailbox = makeMailbox()
 
-    const supervisor = makeSupervisor({
-        fn,
-        dispatch: systemDispatch,
-        state,
-        context,
-        mailbox,
-    })
+        const state = makeStateHandler({
+            id,
+            initialState,
+            isValidState,
+        })
 
-    const actorDispatch = (message: Message) => {
-        mailbox.deliver(message)
-        supervisor.processMessages()
+        const supervisor = makeSupervisor({
+            fn,
+            dispatch: messaging.dispatch,
+            state,
+            context,
+            mailbox,
+        })
+
+        const actorDispatch = (message: Message) => {
+            mailbox.deliver(message)
+            supervisor.processMessages()
+        }
+
+        const actor = { id, dispatch: actorDispatch }
+        messaging.connectActor(actor)
+        return actor
     }
 
-    return { id, dispatch: actorDispatch }
-}
+export const makeSpawnStateless: MakeSpawnStatelessFn =
+    ({ messaging, makeMailbox, makeSupervisor }) =>
+    ({ id, fn, context = {} }) => {
+        const mailbox = makeMailbox()
 
-export const spawnStateless: StatelessSpawnFn = ({
-    systemDispatch,
-    makeMailbox,
-    makeSupervisor,
-    id,
-    fn,
-    context,
-}) => {
-    const mailbox = makeMailbox()
+        const supervisor = makeSupervisor({
+            fn,
+            dispatch: messaging.dispatch,
+            state: null,
+            context,
+            mailbox,
+        })
 
-    const supervisor = makeSupervisor({
-        fn,
-        dispatch: systemDispatch,
-        state: null,
-        context,
-        mailbox,
-    })
+        const actorDispatch = (message: Message) => {
+            mailbox.deliver(message)
+            supervisor.processMessages()
+        }
 
-    const actorDispatch = (message: Message) => {
-        mailbox.deliver(message)
-        supervisor.processMessages()
+        const actor = { id, dispatch: actorDispatch }
+        messaging.connectActor(actor)
+        return actor
     }
-
-    return { id, dispatch: actorDispatch }
-}

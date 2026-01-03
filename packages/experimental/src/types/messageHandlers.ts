@@ -1,10 +1,10 @@
-import { ActorFn } from './actor'
-import { Message } from './message'
+import { ActorFn } from 'src/types/actor'
+import { Message } from 'src/types/message'
 import {
     InferAcceptedMessageTypes,
     InferContextType,
     InferStateType,
-} from './util'
+} from 'src/types/util'
 
 export type MessageHandlers<Fn extends ActorFn<any, any, any>> = {
     [MessageType in InferAcceptedMessageTypes<Fn>['type']]: ActorFn<

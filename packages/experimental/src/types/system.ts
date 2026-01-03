@@ -3,9 +3,7 @@ import { ActorId } from 'src/types/base'
 import { Message } from 'src/types/message'
 import { ConnectRemotesFn, DisconnectRemotesFn } from 'src/types/messaging'
 import { QueryFn } from 'src/types/queryFn'
-
-import { StatefulSpawnFn, StatelessSpawnFn } from './spawn'
-import { PickNamedArgsOf } from './util'
+import { SpawnStatefulFn, SpawnStatelessFn } from 'src/types/spawn'
 
 /**
  * Outgoing messages are dispatched using a `DispatchFn`.
@@ -33,12 +31,9 @@ export type Actor = {
  * This system is merely a template, custom systems can be composed.
  */
 export type ActorSystem = {
-    spawnStateless: PickNamedArgsOf<StatelessSpawnFn, 'id' | 'fn' | 'context'>
-    spawnStateful: PickNamedArgsOf<
-        StatefulSpawnFn,
-        'id' | 'fn' | 'context' | 'initialState' | 'isValidState'
-    >
-    // spawnPersistent: PickNamedArgsOf<StatefulSpawnFn, 'id' | 'fn' | 'context' | 'initialState' | 'isValidState'>
+    spawnStateless: SpawnStatelessFn
+    spawnStateful: SpawnStatefulFn
+    spawnPersistent: SpawnStatefulFn
     query: QueryFn
     dispatch: DispatchFn
     connectRemotes: ConnectRemotesFn

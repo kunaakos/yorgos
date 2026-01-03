@@ -1,32 +1,57 @@
 import { ActorFn } from 'src/types/actor'
 import { ActorId, Serializable } from 'src/types/base'
 import { MakeMailbox } from 'src/types/mailbox'
+import { Messaging } from 'src/types/messaging'
 import { MakeStateHandler, StateValidatorFn } from 'src/types/stateHandler.type'
 import { MakeSupervisor } from 'src/types/supervisor'
-import { Actor, DispatchFn } from 'src/types/system'
+import { Actor } from 'src/types/system'
 import { AnyRecord } from 'src/types/util'
 
-type SpawnFnArgs<ContextType extends AnyRecord> = {
-    systemDispatch: DispatchFn
-    makeMailbox: MakeMailbox
-    makeSupervisor: MakeSupervisor
+export type SpawnStatefulFnArgs<
+    StateType extends Serializable,
+    ContextType extends AnyRecord,
+> = {
     id: ActorId
-    context: ContextType
+    context?: ContextType
+    initialState: StateType
+    isValidState?: StateValidatorFn<StateType>
+    fn: ActorFn<StateType, ContextType, any>
 }
-export type StatefulSpawnFn = <
+
+export type SpawnStatefulFn = <
     StateType extends Serializable,
     ContextType extends AnyRecord,
 >(
-    args: SpawnFnArgs<ContextType> & {
-        makeStateHandler: MakeStateHandler
-        initialState: StateType
-        isValidState: StateValidatorFn<StateType>
-        fn: ActorFn<StateType, ContextType, any>
-    },
+    args: SpawnStatefulFnArgs<StateType, ContextType>,
 ) => Actor
 
-export type StatelessSpawnFn = <ContextType extends AnyRecord>(
-    args: SpawnFnArgs<ContextType> & {
-        fn: ActorFn<null, ContextType, any>
-    },
+export type MakeSpawnStatefulFnArgs = {
+    messaging: Messaging
+    makeMailbox: MakeMailbox
+    makeSupervisor: MakeSupervisor
+    makeStateHandler: MakeStateHandler
+}
+
+export type MakeSpawnStatefulFn = (
+    args: MakeSpawnStatefulFnArgs,
+) => SpawnStatefulFn
+
+export type SpawnStatelessFnArgs<ContextType extends AnyRecord> = {
+    id: ActorId
+    context?: ContextType
+    fn: ActorFn<null, ContextType, any>
+}
+
+export type SpawnStatelessFn = <ContextType extends AnyRecord>(
+    args: SpawnStatelessFnArgs<ContextType>,
 ) => Actor
+
+export type MakeSpawnStatelessFnArgs = {
+    messaging: Messaging
+    makeMailbox: MakeMailbox
+    makeSupervisor: MakeSupervisor
+}
+
+export type MakeSpawnStatelessFn = (
+    args: MakeSpawnStatelessFnArgs,
+) => SpawnStatelessFn
