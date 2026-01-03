@@ -13,6 +13,7 @@
         "directory": "/packages/experimental"
     },
     "scripts": {
+        "check": "tsc --project tsconfig.json",
         "test": "jest",
         "build": "tsdown",
         "watch": "tsdown --watch"
