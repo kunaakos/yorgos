@@ -1,14 +1,7 @@
 {
     "compilerOptions": {
         "strict": true,
-        "module": "ES2022",
-        "target": "esnext",
-        "moduleResolution": "node",
-        "sourceMap": true,
-        "declaration": true,
-        "declarationMap": true,
-        // "composite": true,
-        // "incremental": true,
+        "erasableSyntaxOnly": true,
         "allowUnreachableCode": false,
         "exactOptionalPropertyTypes": true,
         "forceConsistentCasingInFileNames": true,
