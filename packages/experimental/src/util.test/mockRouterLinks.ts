@@ -1,3 +1,5 @@
+import { vi } from 'vitest'
+
 import { ActorId, ActorSystemId } from 'src/types/base'
 import { Downlink, Router, Uplink } from 'src/types/remoting'
 
@@ -21,8 +23,8 @@ export const mockRouterLinks = ({
     systemIds.forEach((systemId) => {
         const downlink = {
             systemId,
-            dispatch: jest.fn(),
-            disconnect: jest.fn(),
+            dispatch: vi.fn(),
+            disconnect: vi.fn(),
         }
         const uplink = router.link(downlink)
         if (!uplink) throw new Error()

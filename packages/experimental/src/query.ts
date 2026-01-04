@@ -23,6 +23,7 @@ export const makeQuery =
          * The creation and destruction of this actor is enclosed in this promise executor.
          **/
         return new Promise((resolve, reject) => {
+            // TODO: inject `uniqueId`
             const queryId: MessageId = uniqueId()
             const queryActorId: ActorId = uniqueId()
 

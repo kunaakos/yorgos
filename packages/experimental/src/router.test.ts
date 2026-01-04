@@ -1,3 +1,5 @@
+import { describe, expect, test, vi } from 'vitest'
+
 import { initRouter } from 'src/router'
 import { plainTestMessageTo } from 'src/util.test/messageTemplates'
 import { mockRouterLinks } from 'src/util.test/mockRouterLinks'
@@ -5,8 +7,8 @@ import { mockRouterLinks } from 'src/util.test/mockRouterLinks'
 describe('router', () => {
     test('should discard messages addressed to unpublished actors', () => {
         const router = initRouter()
-        const dispatch = jest.fn()
-        const destroy = jest.fn()
+        const dispatch = vi.fn()
+        const destroy = vi.fn()
         const uplink = router.link({
             dispatch,
             systemId: 'TEST',

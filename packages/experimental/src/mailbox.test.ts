@@ -1,3 +1,5 @@
+import { describe, expect, test } from 'vitest'
+
 import { makeMailbox } from 'src/mailbox'
 import { plainTestMessageTo } from 'src/util.test/messageTemplates'
 

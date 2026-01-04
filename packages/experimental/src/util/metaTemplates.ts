@@ -8,6 +8,7 @@ import {
 import { uniqueId } from 'src/util/uniqueId'
 
 export const plainMeta = ({ to }: { to: ActorId }): PlainMessageMeta => ({
+    // TODO: inject `uniqueId`
     id: uniqueId(),
     cat: 'P',
     to,
@@ -32,6 +33,7 @@ export const responseMetaTo = ({
     rsvp,
     id,
 }: QueryMessageMeta): ResponseMessageMeta => ({
+    // TODO: inject `uniqueId`
     id: uniqueId(),
     cat: 'R',
     to: rsvp,

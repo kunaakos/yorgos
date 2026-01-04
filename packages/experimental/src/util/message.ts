@@ -16,6 +16,7 @@ export const forwardedCopyOf = <MessageType extends Message>({
         ...messageClone,
         meta: {
             ...messageClone.meta,
+            // TODO: inject `uniqueId`
             id: uniqueId(),
             to,
         },

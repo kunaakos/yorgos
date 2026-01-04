@@ -24,6 +24,7 @@ export const makeSystem = ({
     makeSupervisor?: MakeSupervisor
     makePersistentStateHandler?: MakeStateHandler
 } = {}): ActorSystem => {
+    // TODO: inject `uniqueId`
     const systemId = id || uniqueId()
     const messaging = initMessaging({ systemId })
     const query = makeQuery({ messaging })

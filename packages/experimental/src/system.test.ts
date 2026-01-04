@@ -1,12 +1,11 @@
+import { beforeEach, describe, expect, test, vi } from 'vitest'
+
 import { ActorFn } from 'src/types/actor'
 import { PlainMessage, QueryMessage, ResponseMessage } from 'src/types/message'
 
 import { plainMeta, responseMetaTo } from 'src/util/metaTemplates'
-import { uniqueId } from 'src/util/uniqueId'
 
 import { makeSystem } from 'src/system'
-
-jest.mock('src/util/uniqueId')
 
 const delay = (millis: number) =>
     new Promise((resolve) => setTimeout(resolve, millis))
@@ -41,12 +40,20 @@ type TestResponseMessageWithPayload = ResponseMessage<
     { string: string } //
 >
 
+/**
+ * TODO: `uniqueId` should be injected, not mocked
+ */
+let mockIdNr = 1
+vi.mock('src/util/uniqueId', () => {
+    return {
+        uniqueId: vi.fn(() => `MOCK_ID_${mockIdNr++}`),
+    }
+})
+
 describe('actor system', () => {
     beforeEach(() => {
-        let mockIdNr = 1
-        ;(uniqueId as jest.Mock).mockImplementation(
-            () => `MOCK_ID_${mockIdNr++}`,
-        )
+        mockIdNr = 1
+        vi.resetAllMocks()
     })
 
     test('messaging', async () => {
@@ -178,7 +185,7 @@ describe('actor system', () => {
             fn: actorFn,
         })
 
-        expect(
+        await expect(
             system.query<
                 TestQueryMessageWithPayload,
                 TestResponseMessageWithPayload
