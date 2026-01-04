@@ -2,7 +2,7 @@ import { Message } from 'src/types/message'
 import { MakeSpawnStatefulFn, MakeSpawnStatelessFn } from 'src/types/spawn'
 
 export const makeSpawnStateful: MakeSpawnStatefulFn =
-    ({ messaging, makeStateHandler, makeMailbox, makeSupervisor }) =>
+    ({ messaging, makeStateHandler, makeMailbox, makeSupervisor, uniqueId }) =>
     ({ id, fn, initialState, validator, context }) => {
         const mailbox = makeMailbox()
 
@@ -25,13 +25,13 @@ export const makeSpawnStateful: MakeSpawnStatefulFn =
             supervisor.processMessages()
         }
 
-        const actor = { id, dispatch: actorDispatch }
+        const actor = { id: id || uniqueId(), dispatch: actorDispatch }
         messaging.connectActor(actor)
         return actor
     }
 
 export const makeSpawnStateless: MakeSpawnStatelessFn =
-    ({ messaging, makeMailbox, makeSupervisor }) =>
+    ({ messaging, makeMailbox, makeSupervisor, uniqueId }) =>
     ({ id, fn, context }) => {
         const mailbox = makeMailbox()
 
@@ -48,7 +48,7 @@ export const makeSpawnStateless: MakeSpawnStatelessFn =
             supervisor.processMessages()
         }
 
-        const actor = { id, dispatch: actorDispatch }
+        const actor = { id: id || uniqueId(), dispatch: actorDispatch }
         messaging.connectActor(actor)
         return actor
     }

@@ -1,9 +1,11 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { Mock, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import { ActorFn } from 'src/types/actor'
 import { PlainMessage, QueryMessage, ResponseMessage } from 'src/types/message'
 
 import { plainMeta, responseMetaTo } from 'src/util/metaTemplates'
+import { mockUniqueId } from 'src/util/test/uniqueId'
+import { uuidV7 } from 'src/util/uniqueId'
 
 import { makeSystem } from 'src/system'
 
@@ -40,19 +42,14 @@ type TestResponseMessageWithPayload = ResponseMessage<
     { string: string } //
 >
 
-/**
- * TODO: `uniqueId` should be injected, not mocked
- */
-let mockIdNr = 1
 vi.mock('src/util/uniqueId', () => {
     return {
-        uniqueId: vi.fn(() => `MOCK_ID_${mockIdNr++}`),
+        uuidV7: vi.fn(() => `MOCK_UUIDV7`),
     }
 })
 
 describe('actor system', () => {
     beforeEach(() => {
-        mockIdNr = 1
         vi.resetAllMocks()
     })
 
@@ -67,7 +64,10 @@ describe('actor system', () => {
             return null
         }
 
-        const system = makeSystem({ id: TEST_SYSTEM_ID })
+        const system = makeSystem({
+            id: TEST_SYSTEM_ID,
+            uniqueId: mockUniqueId(),
+        })
         const actor = system.spawnStateless({
             id: TEST_ACTOR_ID,
             fn: actorFn,
@@ -87,7 +87,7 @@ describe('actor system', () => {
             type: 'TEST_MESSAGE_WITH_PAYLOAD',
             payload: { string: 'hi! how are you?' },
             meta: {
-                id: 'MOCK_ID_1',
+                mid: 'MOCK_UUIDV7',
                 cat: 'P',
                 to: 'TEST_ACTOR',
             },
@@ -120,7 +120,10 @@ describe('actor system', () => {
             }
         }
 
-        const system = makeSystem({ id: TEST_SYSTEM_ID })
+        const system = makeSystem({
+            id: TEST_SYSTEM_ID,
+            uniqueId: mockUniqueId(),
+        })
         system.spawnStateless({
             id: TEST_ACTOR_ID,
             fn: actorFn,
@@ -144,10 +147,10 @@ describe('actor system', () => {
             type: 'TEST_QUERY_WITH_PAYLOAD',
             payload: { string: 'test query' },
             meta: {
-                id: 'MOCK_ID_1',
+                mid: 'MOCK_UUIDV7',
                 cat: 'Q',
                 to: 'TEST_ACTOR',
-                rsvp: 'MOCK_ID_2',
+                rsvp: 'MOCK_ACTOR_ID_1',
             },
         })
     })
@@ -179,7 +182,10 @@ describe('actor system', () => {
             }
         }
 
-        const system = makeSystem({ id: TEST_SYSTEM_ID })
+        const system = makeSystem({
+            id: TEST_SYSTEM_ID,
+            uniqueId: mockUniqueId(),
+        })
         system.spawnStateless({
             id: TEST_ACTOR_ID,
             fn: actorFn,
@@ -205,10 +211,10 @@ describe('actor system', () => {
             type: 'TEST_QUERY_WITH_PAYLOAD',
             payload: { string: 'test query' },
             meta: {
-                id: 'MOCK_ID_1',
+                mid: 'MOCK_UUIDV7',
                 cat: 'Q',
                 to: 'TEST_ACTOR',
-                rsvp: 'MOCK_ID_2',
+                rsvp: 'MOCK_ACTOR_ID_1',
             },
         })
     })
@@ -244,7 +250,10 @@ describe('actor system', () => {
             return null
         }
 
-        const system = makeSystem({ id: TEST_SYSTEM_ID })
+        const system = makeSystem({
+            id: TEST_SYSTEM_ID,
+            uniqueId: mockUniqueId(),
+        })
         system.spawnStateless({
             id: '1',
             fn: actorFn,
@@ -316,7 +325,7 @@ describe('actor system', () => {
                 const testResponseMessage: TestResponseMessageWithPayload = {
                     type: 'TEST_RESPONSE_WITH_PAYLOAD',
                     payload: { string: `${msg.payload.string} response` },
-                    meta: responseMetaTo(msg.meta),
+                    meta: responseMetaTo(msg.meta), // calls `uuidV7`, should be called twice
                 }
                 dispatch(testResponseMessage)
                 return null
@@ -326,7 +335,14 @@ describe('actor system', () => {
             }
         }
 
-        const system = makeSystem({ id: TEST_SYSTEM_ID })
+        const system = makeSystem({
+            id: TEST_SYSTEM_ID,
+            uniqueId: mockUniqueId(),
+        })
+
+        const uuidMock = uuidV7 as Mock
+        uuidMock.mockImplementation(mockUniqueId('MOCK_MSG_UUID'))
+
         system.spawnStateless({
             id: TEST_ACTOR_ID,
             fn: actorFn,
@@ -336,12 +352,14 @@ describe('actor system', () => {
             type: 'TEST_MESSAGE',
             payload: null,
             meta: plainMeta({
+                // calls `uuidV7`
                 to: TEST_ACTOR_ID,
             }),
         }
         system.dispatch(testMessage)
         eventLog.push('1: plain message dispatched')
 
+        // query calls `uuidV7`
         const slowResponsePromise = system.query<
             TestQueryMessageWithPayload,
             TestResponseMessageWithPayload
@@ -352,6 +370,7 @@ describe('actor system', () => {
         })
         eventLog.push('2: slow query message dispatched')
 
+        // query calls `uuidV7`
         const fastResponsePromise = system.query<
             TestQueryMessageWithPayload,
             TestResponseMessageWithPayload
@@ -380,7 +399,7 @@ describe('actor system', () => {
             type: 'TEST_MESSAGE',
             payload: null,
             meta: {
-                id: 'MOCK_ID_1',
+                mid: 'MOCK_MSG_UUID_1',
                 cat: 'P',
                 to: 'TEST_ACTOR',
             },
@@ -389,22 +408,25 @@ describe('actor system', () => {
             type: 'TEST_QUERY_WITH_PAYLOAD',
             payload: { string: 'slow' },
             meta: {
-                id: 'MOCK_ID_2',
+                mid: 'MOCK_MSG_UUID_2',
                 cat: 'Q',
                 to: 'TEST_ACTOR',
-                rsvp: 'MOCK_ID_3',
+                rsvp: 'MOCK_ACTOR_ID_1',
             },
         })
         expect(JSON.parse(messageLog[2] as string)).toStrictEqual({
             type: 'TEST_QUERY_WITH_PAYLOAD',
             payload: { string: 'fast' },
             meta: {
-                id: 'MOCK_ID_4',
+                mid: 'MOCK_MSG_UUID_3',
                 cat: 'Q',
                 to: 'TEST_ACTOR',
-                rsvp: 'MOCK_ID_5',
+                rsvp: 'MOCK_ACTOR_ID_2',
             },
         })
+
+        expect(messageLog.length).toBe(3)
+        expect(uuidMock).toBeCalledTimes(5) // two queries + 3 message meta template calls
 
         expect(eventLog).toStrictEqual([
             '1: plain message dispatched',

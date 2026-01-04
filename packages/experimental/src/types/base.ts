@@ -2,6 +2,8 @@ export type Nullable<T> = T | null
 
 type Id = string
 
+export type UniqueIdFn = () => Id
+
 export type ActorSystemId = Id
 export type ActorId = Id
 export type MessageId = Id

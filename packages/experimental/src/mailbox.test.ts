@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'vitest'
 
+import { plainTestMessageTo } from 'src/util/test/messageTemplates'
+
 import { makeMailbox } from 'src/mailbox'
-import { plainTestMessageTo } from 'src/util.test/messageTemplates'
 
 describe('mailbox', () => {
     test('should store a deep clone of received messages', () => {
@@ -9,7 +10,11 @@ describe('mailbox', () => {
         const mutableMessage = plainTestMessageTo('NOBODY')
 
         mailbox.deliver(mutableMessage)
-        mutableMessage.meta = { id: 'oops', cat: 'P', to: 'something happened' }
+        mutableMessage.meta = {
+            mid: 'oops',
+            cat: 'P',
+            to: 'something happened',
+        }
 
         const storedMessage = mailbox.getOldest()
         expect(storedMessage).toStrictEqual(plainTestMessageTo('NOBODY'))
@@ -21,7 +26,11 @@ describe('mailbox', () => {
         mailbox.deliver(plainTestMessageTo('NOBODY'))
 
         const mutatedMessage = mailbox.getOldest()
-        mutatedMessage.meta = { id: 'oops', cat: 'P', to: 'something happened' }
+        mutatedMessage.meta = {
+            mid: 'oops',
+            cat: 'P',
+            to: 'something happened',
+        }
 
         const storedMessage = mailbox.getOldest()
         expect(storedMessage).toStrictEqual(plainTestMessageTo('NOBODY'))

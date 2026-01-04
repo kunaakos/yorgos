@@ -1,6 +1,8 @@
-import { ActorId } from 'src/types/base'
+import { ActorId, UniqueIdFn } from 'src/types/base'
 import { Message } from 'src/types/message'
 import { TypeAndPayloadOf } from 'src/types/util'
+
+import { Messaging } from './messaging'
 
 export type QueryOptions = {
     timeout: number
@@ -19,3 +21,10 @@ export type QueryFn = <
 >(
     args: QueryFnParams<QueryMessageType>,
 ) => Promise<TypeAndPayloadOf<ResponseMessageType>>
+
+export type MakeQueryArgs = {
+    messaging: Messaging
+    uniqueId: UniqueIdFn
+}
+
+export type MakeQuery = (args: MakeQueryArgs) => QueryFn

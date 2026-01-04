@@ -1,7 +1,7 @@
 import { ActorId, MessageId } from 'src/types/base'
 
 type MessageMetaCommon = {
-    id: MessageId
+    mid: MessageId
     to: ActorId
     via?: ActorId[]
 }

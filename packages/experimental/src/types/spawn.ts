@@ -1,5 +1,5 @@
 import { ActorFn } from 'src/types/actor'
-import { ActorId, Serializable } from 'src/types/base'
+import { ActorId, Serializable, UniqueIdFn } from 'src/types/base'
 import { MakeMailbox } from 'src/types/mailbox'
 import { Messaging } from 'src/types/messaging'
 import { MakeStateHandler, StateValidatorFn } from 'src/types/stateHandler'
@@ -30,6 +30,7 @@ export type MakeSpawnStatefulFnArgs = {
     makeMailbox: MakeMailbox
     makeSupervisor: MakeSupervisor
     makeStateHandler: MakeStateHandler
+    uniqueId: UniqueIdFn
 }
 
 export type MakeSpawnStatefulFn = (
@@ -50,6 +51,7 @@ export type MakeSpawnStatelessFnArgs = {
     messaging: Messaging
     makeMailbox: MakeMailbox
     makeSupervisor: MakeSupervisor
+    uniqueId: UniqueIdFn
 }
 
 export type MakeSpawnStatelessFn = (

@@ -4,5 +4,5 @@ import { PlainMessage } from 'src/types/message'
 export const plainTestMessageTo = (to: ActorId): PlainMessage => ({
     type: 'X',
     payload: null,
-    meta: { id: '#', cat: 'P', to },
+    meta: { mid: '#', cat: 'P', to },
 })

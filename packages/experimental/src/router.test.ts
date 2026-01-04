@@ -1,8 +1,9 @@
 import { describe, expect, test, vi } from 'vitest'
 
+import { plainTestMessageTo } from 'src/util/test/messageTemplates'
+import { mockRouterLinks } from 'src/util/test/mockRouterLinks'
+
 import { initRouter } from 'src/router'
-import { plainTestMessageTo } from 'src/util.test/messageTemplates'
-import { mockRouterLinks } from 'src/util.test/mockRouterLinks'
 
 describe('router', () => {
     test('should discard messages addressed to unpublished actors', () => {

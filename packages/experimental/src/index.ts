@@ -1,5 +1,4 @@
 export type { ActorFn } from 'src/types/actor'
-export type { QueryFnParams, QueryOptions } from 'src/types/queryFn'
 
 export type {
     ActorId,
@@ -8,8 +7,13 @@ export type {
     Serializable,
 } from 'src/types/base'
 
+export { uuidV7 } from 'src/util/uniqueId'
+
 export type { ActorSystem, Actor, DispatchFn } from 'src/types/system'
 export { makeSystem } from 'src/system'
+
+export type { QueryFnParams, QueryOptions, MakeQuery } from 'src/types/queryFn'
+export { makeQuery } from 'src/query'
 
 export type {
     Message,
@@ -18,7 +22,6 @@ export type {
     ResponseMessage,
     MessageTypeIdentifier,
 } from 'src/types/message'
-export { uniqueId } from 'src/util/uniqueId'
 export { forwardedCopyOf } from 'src/util/message'
 
 export type {
@@ -26,7 +29,7 @@ export type {
     QueryMessageMeta,
     ResponseMessageMeta,
 } from 'src/types/messageMeta'
-export { plainMeta, queryMeta, responseMetaTo } from 'src/util/metaTemplates'
+export { plainMeta, responseMetaTo } from 'src/util/metaTemplates'
 
 export type { MessageHandlers } from 'src/types/messageHandlers'
 export { usingHandlers } from 'src/messageHandlers'

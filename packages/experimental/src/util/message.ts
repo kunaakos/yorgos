@@ -2,7 +2,7 @@ import { ActorId } from 'src/types/base'
 import { Message } from 'src/types/message'
 
 import { clone } from 'src/util/clone'
-import { uniqueId } from 'src/util/uniqueId'
+import { uuidV7 } from 'src/util/uniqueId'
 
 export const forwardedCopyOf = <MessageType extends Message>({
     message,
@@ -16,8 +16,7 @@ export const forwardedCopyOf = <MessageType extends Message>({
         ...messageClone,
         meta: {
             ...messageClone.meta,
-            // TODO: inject `uniqueId`
-            id: uniqueId(),
+            id: uuidV7(),
             to,
         },
     }

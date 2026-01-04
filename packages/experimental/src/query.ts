@@ -1,18 +1,26 @@
 import { ActorId, MessageId } from 'src/types/base'
 import { Message } from 'src/types/message'
-import { Messaging } from 'src/types/messaging'
-import { QueryFn, QueryOptions } from 'src/types/queryFn'
+import { MakeQuery, QueryOptions } from 'src/types/queryFn'
 
-import { queryMeta } from 'src/util/metaTemplates'
-import { uniqueId } from 'src/util/uniqueId'
+import { uuidV7 } from './util/uniqueId'
 
 const DEFAULT_QUERY_OPTIONS: QueryOptions = {
     timeout: 500,
 }
 
-export const makeQuery =
-    ({ messaging }: { messaging: Messaging }): QueryFn =>
-    ({ id: to, type, payload, options: optionsProvided = {} }) => {
+export const makeQuery: MakeQuery =
+    ({
+        //
+        messaging,
+        uniqueId,
+    }) =>
+    ({
+        //
+        id: to,
+        type,
+        payload,
+        options: optionsProvided = {},
+    }) => {
         const options: QueryOptions = {
             ...DEFAULT_QUERY_OPTIONS,
             ...optionsProvided,
@@ -23,8 +31,7 @@ export const makeQuery =
          * The creation and destruction of this actor is enclosed in this promise executor.
          **/
         return new Promise((resolve, reject) => {
-            // TODO: inject `uniqueId`
-            const queryId: MessageId = uniqueId()
+            const queryMessageId: MessageId = uuidV7()
             const queryActorId: ActorId = uniqueId()
 
             /**
@@ -48,7 +55,7 @@ export const makeQuery =
                     if (
                         responseMsg.meta &&
                         responseMsg.meta.cat === 'R' &&
-                        responseMsg.meta.irt === queryId
+                        responseMsg.meta.irt === queryMessageId
                     ) {
                         resolve({
                             type: responseMsg.type,
@@ -63,11 +70,12 @@ export const makeQuery =
             messaging.dispatch({
                 type,
                 payload,
-                meta: queryMeta({
-                    id: queryId,
+                meta: {
+                    mid: queryMessageId,
                     to,
+                    cat: 'Q',
                     rsvp: queryActorId,
-                }),
+                },
             })
         })
     }

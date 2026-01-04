@@ -1,10 +1,10 @@
-import { ActorSystemId } from 'src/types/base'
+import { ActorSystemId, UniqueIdFn } from 'src/types/base'
 import { MakeMailbox } from 'src/types/mailbox'
 import { MakeStateHandler } from 'src/types/stateHandler'
 import { MakeSupervisor } from 'src/types/supervisor'
 import { ActorSystem } from 'src/types/system'
 
-import { uniqueId } from 'src/util/uniqueId'
+import { uuidV7 } from 'src/util/uniqueId'
 
 import { makeMailbox as makeDefaultMailbox } from 'src/mailbox'
 import { initMessaging } from 'src/messaging'
@@ -18,16 +18,17 @@ export const makeSystem = ({
     makeMailbox = makeDefaultMailbox,
     makeSupervisor = makeDefaultSupervisor,
     makePersistentStateHandler,
+    uniqueId = uuidV7,
 }: {
     id?: ActorSystemId
     makeMailbox?: MakeMailbox
     makeSupervisor?: MakeSupervisor
     makePersistentStateHandler?: MakeStateHandler
+    uniqueId?: UniqueIdFn
 } = {}): ActorSystem => {
-    // TODO: inject `uniqueId`
     const systemId = id || uniqueId()
     const messaging = initMessaging({ systemId })
-    const query = makeQuery({ messaging })
+    const query = makeQuery({ messaging, uniqueId })
 
     return {
         spawnStateful: makeSpawnStateful({
@@ -35,11 +36,13 @@ export const makeSystem = ({
             makeMailbox,
             makeSupervisor,
             makeStateHandler: makeInMemoryStateHandler,
+            uniqueId,
         }),
         spawnStateless: makeSpawnStateless({
             messaging,
             makeMailbox,
             makeSupervisor,
+            uniqueId,
         }),
         spawnPersistent: makePersistentStateHandler
             ? makeSpawnStateful({
@@ -47,6 +50,7 @@ export const makeSystem = ({
                   makeMailbox,
                   makeSupervisor,
                   makeStateHandler: makePersistentStateHandler,
+                  uniqueId,
               })
             : () => {
                   throw new Error(
