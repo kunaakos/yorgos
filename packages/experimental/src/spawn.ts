@@ -1,30 +1,22 @@
 import { Message } from 'src/types/message'
 import { MakeSpawnStatefulFn, MakeSpawnStatelessFn } from 'src/types/spawn'
 
-import { stubStateValidator } from 'src/stateHandler'
-
 export const makeSpawnStateful: MakeSpawnStatefulFn =
     ({ messaging, makeStateHandler, makeMailbox, makeSupervisor }) =>
-    ({
-        id,
-        fn,
-        initialState,
-        isValidState = stubStateValidator,
-        context = {},
-    }) => {
+    ({ id, fn, initialState, validator, context }) => {
         const mailbox = makeMailbox()
 
         const state = makeStateHandler({
             id,
             initialState,
-            isValidState,
+            validator: validator || null,
         })
 
         const supervisor = makeSupervisor({
             fn,
             dispatch: messaging.dispatch,
             state,
-            context,
+            context: context || {},
             mailbox,
         })
 
@@ -40,14 +32,14 @@ export const makeSpawnStateful: MakeSpawnStatefulFn =
 
 export const makeSpawnStateless: MakeSpawnStatelessFn =
     ({ messaging, makeMailbox, makeSupervisor }) =>
-    ({ id, fn, context = {} }) => {
+    ({ id, fn, context }) => {
         const mailbox = makeMailbox()
 
         const supervisor = makeSupervisor({
             fn,
             dispatch: messaging.dispatch,
             state: null,
-            context,
+            context: context || {},
             mailbox,
         })
 

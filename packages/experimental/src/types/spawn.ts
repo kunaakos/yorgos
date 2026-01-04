@@ -2,7 +2,7 @@ import { ActorFn } from 'src/types/actor'
 import { ActorId, Serializable } from 'src/types/base'
 import { MakeMailbox } from 'src/types/mailbox'
 import { Messaging } from 'src/types/messaging'
-import { MakeStateHandler, StateValidatorFn } from 'src/types/stateHandler.type'
+import { MakeStateHandler, StateValidatorFn } from 'src/types/stateHandler'
 import { MakeSupervisor } from 'src/types/supervisor'
 import { Actor } from 'src/types/system'
 import { AnyRecord } from 'src/types/util'
@@ -14,7 +14,7 @@ export type SpawnStatefulFnArgs<
     id: ActorId
     context?: ContextType
     initialState: StateType
-    isValidState?: StateValidatorFn<StateType>
+    validator?: StateValidatorFn<StateType>
     fn: ActorFn<any, StateType, ContextType>
 }
 

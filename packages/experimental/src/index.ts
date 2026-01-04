@@ -9,6 +9,7 @@ export type {
 } from 'src/types/base'
 
 export type { ActorSystem, Actor, DispatchFn } from 'src/types/system'
+export { makeSystem } from 'src/system'
 
 export type {
     Message,
@@ -17,15 +18,45 @@ export type {
     ResponseMessage,
     MessageTypeIdentifier,
 } from 'src/types/message'
+export { uniqueId } from 'src/util/uniqueId'
+export { forwardedCopyOf } from 'src/util/message'
 
 export type {
     PlainMessageMeta,
     QueryMessageMeta,
     ResponseMessageMeta,
 } from 'src/types/messageMeta'
+export { plainMeta, queryMeta, responseMetaTo } from 'src/util/metaTemplates'
 
 export type { MessageHandlers } from 'src/types/messageHandlers'
+export { usingHandlers } from 'src/messageHandlers'
 
+export type {
+    SpawnStatefulFn,
+    MakeSpawnStatefulFn,
+    SpawnStatelessFn,
+    MakeSpawnStatelessFn,
+} from 'src/types/spawn'
+export { makeSpawnStateful, makeSpawnStateless } from 'src/spawn'
+
+export type {
+    StateHandler,
+    MakeStateHandler,
+    MakeStateHandlerArgs,
+    StateValidatorFn,
+} from 'src/types/stateHandler'
+export { makeInMemoryStateHandler } from 'src/stateHandler'
+
+export type { Mailbox, MakeMailbox } from 'src/types/mailbox'
+export { makeMailbox } from 'src/mailbox'
+
+export type { Supervisor, MakeSupervisor } from 'src/types/supervisor'
+export { makeSupervisor } from 'src/supervisor'
+
+export type { Messaging } from 'src/types/messaging'
+export { initMessaging } from 'src/messaging'
+
+export { initRouter } from 'src/router'
 export type {
     Downlink,
     Uplink,
@@ -36,29 +67,3 @@ export type {
     TransportClient,
     InitTransportClientFn,
 } from 'src/types/remoting'
-
-export type {
-    InferAcceptedMessageType,
-    InferStateType,
-    InferContextType,
-} from 'src/types/util'
-
-export type {
-    SpawnStatefulFn,
-    MakeSpawnStatefulFn,
-    SpawnStatelessFn,
-    MakeSpawnStatelessFn,
-} from 'src/types/spawn'
-
-export { makeSpawnStateful, makeSpawnStateless } from 'src/spawn'
-export { makeInMemoryStateHandler, stubStateValidator } from 'src/stateHandler'
-export { makeMailbox } from 'src/mailbox'
-export { makeSupervisor } from 'src/supervisor'
-export { makeSystem } from 'src/system'
-export { initRouter } from 'src/router'
-
-export { plainMeta, queryMeta, responseMetaTo } from 'src/util/metaTemplates'
-export { uniqueId } from 'src/util/uniqueId'
-export { forwardedCopyOf } from 'src/util/message'
-
-export { usingHandlers } from 'src/messageHandlers'

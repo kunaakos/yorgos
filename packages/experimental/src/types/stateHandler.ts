@@ -1,4 +1,4 @@
-import { ActorId, Serializable } from 'src/types/base'
+import { ActorId, Nullable, Serializable } from 'src/types/base'
 import { AsyncOrSync } from 'src/types/util'
 
 export type StateHandler<StateType extends Serializable> = {
@@ -10,8 +10,12 @@ export type StateValidatorFn<StateType extends Serializable> = (
     obj: any,
 ) => obj is StateType
 
-export type MakeStateHandler = <StateType extends Serializable>(args: {
+export type MakeStateHandlerArgs<StateType extends Serializable> = {
     id: ActorId
     initialState: StateType
-    isValidState: StateValidatorFn<StateType>
-}) => StateHandler<StateType>
+    validator: Nullable<StateValidatorFn<StateType>>
+}
+
+export type MakeStateHandler = <StateType extends Serializable>(
+    args: MakeStateHandlerArgs<StateType>,
+) => StateHandler<StateType>

@@ -1,7 +1,7 @@
 import { ActorFn } from 'src/types/actor'
 import { Nullable } from 'src/types/base'
 import { Mailbox } from 'src/types/mailbox'
-import { StateHandler } from 'src/types/stateHandler.type'
+import { StateHandler } from 'src/types/stateHandler'
 import { DispatchFn } from 'src/types/system'
 import { AnyRecord } from 'src/types/util'
 

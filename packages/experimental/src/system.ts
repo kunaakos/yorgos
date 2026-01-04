@@ -1,23 +1,29 @@
 import { ActorSystemId } from 'src/types/base'
-import { MakeStateHandler } from 'src/types/stateHandler.type'
+import { MakeMailbox } from 'src/types/mailbox'
+import { MakeStateHandler } from 'src/types/stateHandler'
+import { MakeSupervisor } from 'src/types/supervisor'
 import { ActorSystem } from 'src/types/system'
 
 import { uniqueId } from 'src/util/uniqueId'
 
-import { makeMailbox } from 'src/mailbox'
+import { makeMailbox as makeDefaultMailbox } from 'src/mailbox'
 import { initMessaging } from 'src/messaging'
 import { makeQuery } from 'src/query'
 import { makeSpawnStateful, makeSpawnStateless } from 'src/spawn'
 import { makeInMemoryStateHandler } from 'src/stateHandler'
-import { makeSupervisor } from 'src/supervisor'
+import { makeSupervisor as makeDefaultSupervisor } from 'src/supervisor'
 
 export const makeSystem = ({
     id,
+    makeMailbox = makeDefaultMailbox,
+    makeSupervisor = makeDefaultSupervisor,
     makePersistentStateHandler,
 }: {
     id?: ActorSystemId
+    makeMailbox?: MakeMailbox
+    makeSupervisor?: MakeSupervisor
     makePersistentStateHandler?: MakeStateHandler
-}): ActorSystem => {
+} = {}): ActorSystem => {
     const systemId = id || uniqueId()
     const messaging = initMessaging({ systemId })
     const query = makeQuery({ messaging })
