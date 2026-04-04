@@ -75,7 +75,7 @@ messaging.connectActor({
     },
 })
 ```
-...if there's a `initOneWayHttpsMessagingHost` attached to `systemA` onm the other end, for example, you'll have no trouble reaching this standalone "actor" from `systemB`, running in a browser. *And that opens up possibilities.*
+...if there's a `initOneWayHttpsMessagingHost` attached to `systemA` on the other end, for example, you'll have no trouble reaching this standalone "actor" from `systemB`, running in a browser. *And that opens up possibilities.*
 
 ## Glossary and Overview
 

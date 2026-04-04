@@ -1,17 +1,30 @@
 import { ActorFn } from 'src/types/actor'
-import { Message } from 'src/types/message'
+import { Message, MessageValidatorFn } from 'src/types/message'
 import {
-    InferAcceptedMessageType,
-    InferContextType,
-    InferStateType,
+    AnyRecord,
+    EmptyRecord,
 } from 'src/types/util'
+import { Nullable, Serializable } from './base'
 
-export type MessageHandlers<Fn extends ActorFn<any, any, any>> = {
-    [MessageType in InferAcceptedMessageType<Fn>['type']]: ActorFn<
-        Extract<InferAcceptedMessageType<Fn>, { type: MessageType }>,
-        InferStateType<Fn>,
-        InferContextType<Fn>
+type MessageHandler<
+    AcceptedMessageType extends Message,
+    StateType extends Nullable<Serializable>,
+    ContextType extends AnyRecord
+> = ActorFn<AcceptedMessageType, StateType, ContextType> | {
+    fn: ActorFn<AcceptedMessageType, StateType, ContextType>
+    messageValidator: MessageValidatorFn<AcceptedMessageType>
+}
+
+export type MessageHandlers<
+    AcceptedMessagesType extends Message = Message,
+    StateType extends Nullable<Serializable> = null,
+    ContextType extends AnyRecord = EmptyRecord,
+> = {
+    [MessageType in AcceptedMessagesType['type']]: MessageHandler<
+        Extract<AcceptedMessagesType, { type: MessageType }>,
+        StateType,
+        ContextType
     >
 } & {
-    other?: ActorFn<Message, InferStateType<Fn>, InferContextType<Fn>>
+    other?: ActorFn<Message, StateType, ContextType>
 }

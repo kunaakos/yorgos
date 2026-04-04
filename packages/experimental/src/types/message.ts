@@ -44,3 +44,7 @@ export type ResponseMessage<
     payload: PayloadType
     meta: ResponseMessageMeta
 }
+
+export type MessageValidatorFn<MessageType extends Message> = (
+    obj: any,
+) => obj is MessageType

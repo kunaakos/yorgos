@@ -32,7 +32,7 @@ export type {
 export { plainMeta, responseMetaTo } from 'src/util/metaTemplates'
 
 export type { MessageHandlers } from 'src/types/messageHandlers'
-export { usingHandlers } from 'src/messageHandlers'
+export { usingMessageHandlers } from 'src/messageHandlers'
 
 export type {
     SpawnStatefulFn,

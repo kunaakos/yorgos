@@ -4,13 +4,13 @@ import { Message } from 'src/types/message'
 import { MessageHandlers } from 'src/types/messageHandlers'
 import { AnyRecord } from 'src/types/util'
 
-export const usingHandlers =
+export const usingMessageHandlers =
     <
         AcceptedMessages extends Message,
         State extends Nullable<Serializable>,
         Context extends AnyRecord,
     >(
-        handlers: MessageHandlers<ActorFn<AcceptedMessages, State, Context>>,
+        handlers: MessageHandlers<AcceptedMessages, State, Context>,
     ): ActorFn<AcceptedMessages, State, Context> =>
     (params) => {
         if (handlers.hasOwnProperty(params.msg.type)) {
