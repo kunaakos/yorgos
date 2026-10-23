@@ -1,1 +1,3 @@
 node_modules
+# NOTE: these should contain the auth token
+.npmrc
