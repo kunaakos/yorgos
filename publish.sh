@@ -77,4 +77,5 @@ echo "All checks seem fine, publishing \`${new_git_tag}\`."
 echo "Running a fresh build..."
 npm run build
 
+# Note: Staged publishing requires npm CLI version 11.15.0 or later and Node version 22.14.0 or higher.
 npm stage publish --tag="${npm_tag}"
