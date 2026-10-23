@@ -96,7 +96,6 @@ describe('actor system', () => {
 
     test('queries', async () => {
         const messageLog: string[] = []
-        const unexpectedMessageLog: string[] = []
 
         const TEST_ACTOR_ID = 'TEST_ACTOR'
         const TEST_SYSTEM_ID = 'TEST_SYSTEM'
@@ -115,8 +114,7 @@ describe('actor system', () => {
                 dispatch(testResponseMessage)
                 return null
             } else {
-                unexpectedMessageLog.push(JSON.stringify(msg))
-                return null
+                throw new Error('Unexpected message.')
             }
         }
 
@@ -129,7 +127,7 @@ describe('actor system', () => {
             fn: actorFn,
         })
 
-        const { type: responseType, payload: responsepayload } =
+        const { type: responseType, payload: responsePayload } =
             await system.query<
                 TestQueryMessageWithPayload,
                 TestResponseMessageWithPayload
@@ -140,9 +138,8 @@ describe('actor system', () => {
             })
 
         expect(responseType).toBe('TEST_RESPONSE_WITH_PAYLOAD')
-        expect(responsepayload).toStrictEqual({ string: 'test response' })
+        expect(responsePayload).toStrictEqual({ string: 'test response' })
         expect(messageLog).toHaveLength(1)
-        expect(unexpectedMessageLog).toHaveLength(0)
         expect(JSON.parse(messageLog[0] as string)).toStrictEqual({
             type: 'TEST_QUERY_WITH_PAYLOAD',
             payload: { string: 'test query' },
@@ -157,7 +154,6 @@ describe('actor system', () => {
 
     test('query timeouts', async () => {
         const messageLog: string[] = []
-        const unexpectedMessageLog: string[] = []
 
         const TEST_ACTOR_ID = 'TEST_ACTOR'
         const TEST_SYSTEM_ID = 'TEST_SYSTEM'
@@ -177,8 +173,7 @@ describe('actor system', () => {
                 dispatch(testResponseMessage) // NOTE: this should not be delivered
                 return null
             } else {
-                unexpectedMessageLog.push(JSON.stringify(msg))
-                return null
+                throw new Error('Unexpected message.')
             }
         }
 
@@ -206,7 +201,6 @@ describe('actor system', () => {
         await delay(15) // NOTE: replace timeouts with better promise-based control
 
         expect(messageLog).toHaveLength(1)
-        expect(unexpectedMessageLog).toHaveLength(0)
         expect(JSON.parse(messageLog[0] as string)).toStrictEqual({
             type: 'TEST_QUERY_WITH_PAYLOAD',
             payload: { string: 'test query' },
@@ -299,7 +293,6 @@ describe('actor system', () => {
 
     test('message processing concurrency', async () => {
         const messageLog: string[] = []
-        const unexpectedMessageLog: string[] = []
         const eventLog: string[] = []
 
         const TEST_ACTOR_ID = 'TEST_ACTOR'
@@ -330,8 +323,7 @@ describe('actor system', () => {
                 dispatch(testResponseMessage)
                 return null
             } else {
-                unexpectedMessageLog.push(JSON.stringify(msg))
-                return null
+                throw new Error('Unexpected message.')
             }
         }
 
