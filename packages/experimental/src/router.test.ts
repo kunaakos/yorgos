@@ -65,6 +65,8 @@ describe('router', () => {
         uplinks['AX']?.publish(['AX1'])
         uplinks['CX']?.publish(['CX3'])
 
+        // TODO: expect errors/warnings to be logged
+
         expect(downlinks['AX']?.disconnect).toHaveBeenCalledTimes(1)
         expect(downlinks['B']?.disconnect).toHaveBeenCalledTimes(0)
         expect(downlinks['CX']?.disconnect).toHaveBeenCalledTimes(1)

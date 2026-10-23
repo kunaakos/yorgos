@@ -2,15 +2,20 @@ import { Mock, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import { ActorFn } from 'src/types/actor'
 import { PlainMessage, QueryMessage, ResponseMessage } from 'src/types/message'
+import { MessageHandlers } from 'src/types/messageHandlers'
 
 import { plainMeta, responseMetaTo } from 'src/util/metaTemplates'
 import { mockUniqueId } from 'src/util/test/uniqueId'
 import { uuidV7 } from 'src/util/uniqueId'
 
+import { usingMessageHandlers } from 'src/messageHandlers'
 import { makeSystem } from 'src/system'
 
 const delay = (millis: number) =>
     new Promise((resolve) => setTimeout(resolve, millis))
+
+// allow the ActorFn to execute
+const delivery = async () => await delay(1)
 
 type TestMessage = PlainMessage<
     'TEST_MESSAGE', //
@@ -41,6 +46,10 @@ type TestResponseMessageWithPayload = ResponseMessage<
     'TEST_RESPONSE_WITH_PAYLOAD', //
     { string: string } //
 >
+
+type TestFooMessage = PlainMessage<'FOO', null>
+type TestBarMessage = PlainMessage<'BAR', null>
+type TestBazMessage = PlainMessage<'BAZ', null>
 
 vi.mock('src/util/uniqueId', () => {
     return {
@@ -80,8 +89,7 @@ describe('actor system', () => {
                 to: actor.id,
             }),
         })
-        await delay(1) // allow the ActorFn to execute
-
+        await delivery()
         expect(messageLog).toHaveLength(1)
         expect(JSON.parse(messageLog[0] as string)).toStrictEqual({
             type: 'TEST_MESSAGE_WITH_PAYLOAD',
@@ -92,6 +100,80 @@ describe('actor system', () => {
                 to: 'TEST_ACTOR',
             },
         })
+    })
+
+    test('message handlers', async () => {
+        const fooHandler = vi.fn() as ActorFn<TestFooMessage>
+        const barHandler = vi.fn() as ActorFn<TestBarMessage>
+        const bazHandler = vi.fn() as ActorFn<TestBazMessage>
+        const otherHandler = vi.fn()
+
+        const handlers: MessageHandlers<TestFooMessage | TestBarMessage> = {
+            FOO: fooHandler,
+            BAR: barHandler,
+            other: otherHandler,
+        }
+
+        const system = makeSystem({
+            id: 'TEST_SYSTEM',
+            uniqueId: mockUniqueId(),
+        })
+
+        const tolerantActor = system.spawnStateless({
+            id: 'TOLERANT_ACTOR',
+            fn: usingMessageHandlers(handlers),
+        })
+
+        const strictActor = system.spawnStateless({
+            id: 'STRICT_ACTOR',
+            fn: usingMessageHandlers({
+                BAZ: bazHandler,
+            } as MessageHandlers<TestBazMessage>),
+        })
+
+        system.dispatch({
+            type: 'FOO',
+            payload: null,
+            meta: plainMeta({ to: tolerantActor.id }),
+        })
+        await delivery()
+        expect(fooHandler).toHaveBeenCalledTimes(1)
+        expect(barHandler).toHaveBeenCalledTimes(0)
+        expect(otherHandler).toHaveBeenCalledTimes(0)
+
+        system.dispatch({
+            type: 'BAR',
+            payload: null,
+            meta: plainMeta({ to: tolerantActor.id }),
+        })
+        await delivery()
+        expect(fooHandler).toHaveBeenCalledTimes(1)
+        expect(barHandler).toHaveBeenCalledTimes(1)
+        expect(otherHandler).toHaveBeenCalledTimes(0)
+
+        system.dispatch({
+            type: 'UNEXPECTED',
+            payload: null,
+            meta: plainMeta({ to: tolerantActor.id }),
+        })
+        await delivery()
+        expect(fooHandler).toHaveBeenCalledTimes(1)
+        expect(barHandler).toHaveBeenCalledTimes(1)
+        expect(otherHandler).toHaveBeenCalledTimes(1)
+
+        system.dispatch({
+            type: 'BAZ',
+            payload: null,
+            meta: plainMeta({ to: strictActor.id }),
+        })
+        system.dispatch({
+            type: 'UNEXPECTED',
+            payload: null,
+            meta: plainMeta({ to: strictActor.id }),
+        })
+        await delivery()
+        expect(bazHandler).toHaveBeenCalledTimes(1)
+        // TODO: expect error to be logged
     })
 
     test('queries', async () => {
