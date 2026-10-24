@@ -18,7 +18,7 @@ import { createKillswitch } from 'src/util/killswitch'
  * or misbehaving transport implementations.
  *
  * If IDs are set manually (which has its purposes for now),
- * they should be managed carefuly, and that shouldn't be
+ * they should be managed carefully, and that shouldn't be
  * the responsibility of the system.
  */
 

@@ -19,7 +19,7 @@ export const initMessaging = ({
 
     /**
      * NOTE: `eventually` and non-blocking calls were not
-     * throroughly though out. Should revisit this.
+     * thoroughly though out. Should revisit this.
      * The idea is that `dispatch` calls should never block anything.
      * The supervisor handles the same for locally dispatched messages.
      */

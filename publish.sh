@@ -1,9 +1,12 @@
 #!/bin/env bash
 
+# This is my quick and dirty npm publish script.
+# It'll live here for now, but will eventually be part of another project.
+# Not for CI, because this library is a personal project, and I like publishing from my personal computers.
+
 set -e
 
 # switch to the project dir where this script is located, just in case
-# TODO: this is a temporary measure
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$script_dir"
 
@@ -56,9 +59,7 @@ else
 fi
 
 # check if the current version is already published or not
-set +e
 npm_check_result=$(npm view "${new_git_tag}" version 2>&1) || true
-set -e
 
 case "$npm_check_result" in
 # npm view returned a version, which means it's already published, halt
@@ -79,3 +80,7 @@ npm run build
 
 # Note: Staged publishing requires npm CLI version 11.15.0 or later and Node version 22.14.0 or higher.
 npm stage publish --tag="${npm_tag}"
+
+# If all succeeded, push the tag.
+# TODO: which remote to push to?
+git push origin $new_git_tag
